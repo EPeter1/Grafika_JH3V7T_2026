@@ -33,7 +33,7 @@ SRC = \
 	src/texture.c \
 	src/utils.c
 
-OUT = main
+OUT = fireworks
 
 all:
 	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) $(WFLAGS) -o $(OUT)

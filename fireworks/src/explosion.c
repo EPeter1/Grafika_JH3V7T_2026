@@ -259,19 +259,25 @@ void explode_strobe(Firework* firework, Spark* spark) {
 }
 
 void explode_ghost(Firework* firework, Spark* spark) {
-    (void)firework;
-
+    int index = get_spark_index(firework, spark);
     vec3 direction = get_spherical_direction();
-    float speed = 0.4f;
-    spark->speed = scale_vec3(direction, speed);
 
-    float angle = atan2f(direction.y, direction.x);
-    float delay = (sinf(angle * 3.0f) + 1.0f) * 0.5f;
+    if (index % 4 == 0) {
+        float speed = 0.15f;
+        spark->speed = scale_vec3(direction, speed);
 
-    set_spark_life(spark, 2.0f + delay);
+        set_spark_life(spark, 3.0f);
+        spark->is_leader = true;
+        spark->trail.length = 1;
+    }
+    else {
+        float speed = 0.5f;
+        spark->speed = scale_vec3(direction, speed);
 
-    spark->trail.length = 3;
-    spark->is_leader = false;
+        set_spark_life(spark, 4.0f);
+        spark->is_leader = false;
+        spark->trail.length = 2;
+    }
 }
 
 void explode_tourbillion(Firework* firework, Spark* spark) {

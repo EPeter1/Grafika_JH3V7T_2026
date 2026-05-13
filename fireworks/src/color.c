@@ -29,7 +29,7 @@ Color mix_color(Color start, Color end, float t) {
     result.red = start.red + (end.red - start.red) * t;
     result.green = start.green + (end.green - start.green) * t;
     result.blue = start.blue + (end.blue - start.blue) * t;
-    result.alpha = start.alpha + (end.alpha - start.alpha) * t;
+    result.alpha = start.alpha;
 
     return result;
 }
