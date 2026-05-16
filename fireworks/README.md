@@ -6,6 +6,7 @@
 	- https://keystonefireworks.com/news/types-of-fireworks-effects/
 	- https://www.ytmfireworks.com/firework-effects
 	- https://northstarfireworks.com/fireworks-types
+- A felhasznált asset-ek elérhetősége: https://drive.google.com/uc?export=download&id=1Zj0Zlnj9v6Ujx2iz6POuHC_D2IxJllRU
 
 ## Főbb elképzelések
 

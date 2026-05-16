@@ -1,6 +1,7 @@
 #ifndef EXPLOSION_H
 #define EXPLOSION_H
 
+#include "color.h"
 #include "fireworks.h"
 #include "spark.h"
 

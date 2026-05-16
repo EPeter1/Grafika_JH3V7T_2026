@@ -4,18 +4,32 @@
 #include "camera.h"
 #include "scene.h"
 
-#include <SDL2/SDL.h>
+#include <GL/glew.h>
+#include <SDL2/SDL_video.h>
 
 #include <stdbool.h>
 
-typedef struct App
-{
+typedef enum AppState {
+    STATE_MAIN_MENU,
+    STATE_SETTINGS,
+    STATE_SIMULATION,
+    STATE_PAUSED
+} AppState;
+
+typedef struct App {
     SDL_Window* window;
     SDL_GLContext gl_context;
     bool is_running;
     double uptime;
     Camera camera;
     Scene scene;
+
+    AppState current_state;
+    AppState previous_state;
+    GLuint background_texture;
+    int menu_selection;
+    bool is_confirmed;
+    bool is_help_shown;
 } App;
 
 /**

@@ -2,13 +2,15 @@ CC = gcc
 
 CFLAGS = \
 	-Iinclude/ \
-	-DGLEW_STATIC
+	-DGLEW_STATIC \
+	-D_USE_MATH_DEFINES
 
 LDFLAGS = \
 	-Llib/ \
 	-lglew32 \
 	-lmingw32 \
 	-lSDL2_image \
+	-lSDL2_ttf \
 	-lSDL2main \
 	-lSDL2 \
 	-lobj \
@@ -17,6 +19,7 @@ LDFLAGS = \
 	-lm
 
 WFLAGS = \
+	-std=c11 \
 	-Wall \
 	-Wextra \
 	-Wpedantic
@@ -25,12 +28,14 @@ SRC = \
 	src/app.c \
 	src/camera.c \
 	src/color.c \
+	src/event.c \
 	src/explosion.c \
 	src/fireworks.c \
 	src/main.c \
 	src/scene.c \
 	src/spark.c \
 	src/texture.c \
+	src/ui.c \
 	src/utils.c
 
 OUT = fireworks

@@ -1,7 +1,6 @@
 #ifndef VEC3_H
 #define VEC3_H
 
-#define _USE_MATH_DEFINES
 #include <math.h>
 
 /**

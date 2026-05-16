@@ -1,9 +1,9 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "camera.h"
 #include "fireworks.h"
 #include "texture.h"
+#include "utils.h"
 
 #include <obj/model.h>
 
@@ -12,6 +12,8 @@ typedef struct Scene
     Model cube;
     Material material;
     GLuint texture_id;
+    float global_brightness;
+    float particle_intensity;
     Firework fireworks[MAX_FIREWORKS];
 } Scene;
 
@@ -23,7 +25,7 @@ void init_scene(Scene* scene);
 /**
  * Set the lighting of the scene.
  */
-void set_lighting();
+void set_lighting(float brightness);
 
 /**
  * Set the current material.

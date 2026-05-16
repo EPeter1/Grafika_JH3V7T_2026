@@ -1,8 +1,10 @@
 #ifndef FIREWORKS_H
 #define FIREWORKS_H
 
+#include "color.h"
 #include "firework_pattern.h"
 #include "spark.h"
+#include "vec3.h"
 
 typedef struct Scene Scene;
 

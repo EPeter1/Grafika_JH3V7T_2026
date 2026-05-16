@@ -1,10 +1,24 @@
-#include <GL/glew.h>
-
 #include "app.h"
-#include "fireworks.h"
 
+#include "camera.h"
+#include "event.h"
+#include "fireworks.h"
+#include "scene.h"
+#include "texture.h"
+#include "ui.h"
+
+#include <GL/glew.h>
 #include <GL/glu.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_error.h>
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_video.h>
+
+#include <stdbool.h>
+#include <stdio.h>
 
 void init_app(App* app, int width, int height)
 {
@@ -38,6 +52,12 @@ void init_app(App* app, int width, int height)
         return;
     }
 
+    inited_loaders = TTF_Init();
+    if (inited_loaders == -1) {
+        printf("[ERROR] TTF initialization error: %s\n", TTF_GetError());
+        return;
+    }
+
     app->gl_context = SDL_GL_CreateContext(app->window);
     if (app->gl_context == NULL) {
         printf("[ERROR] Unable to create the OpenGL context!\n");
@@ -52,13 +72,31 @@ void init_app(App* app, int width, int height)
         return;
     }
 
+    char* font_path = "assets/fonts/Orbitron-Regular.ttf";
+    TTF_Font* font = TTF_OpenFont(font_path, 24);
+
+    if (font) {
+        init_user_interface(font);
+        TTF_CloseFont(font);
+    }
+    else {
+        printf("[ERROR] Failed to load font %s: %s\n", font_path, TTF_GetError());
+        return;
+    }
+
     SDL_GL_SetSwapInterval(1);
-    
+
     init_opengl();
     reshape(width, height);
 
     init_camera(&(app->camera));
     init_scene(&(app->scene));
+
+    app->background_texture = load_texture("assets/textures/menu_background.jpg");
+    app->current_state = STATE_MAIN_MENU;
+    app->menu_selection = 0;
+    app->is_confirmed = false;
+    app->is_help_shown = false;
 
     app->uptime = (double)SDL_GetTicks() / 1000.0;
     app->is_running = true;
@@ -104,114 +142,28 @@ void reshape(GLsizei width, GLsizei height)
 void handle_app_events(App* app)
 {
     SDL_Event event;
-    static bool is_mouse_down = false;
-    static int mouse_x = 0;
-    static int mouse_y = 0;
-    int x;
-    int y;
 
     while (SDL_PollEvent(&event)) {
-        switch (event.type) {
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.scancode) {
-            case SDL_SCANCODE_ESCAPE:
-                app->is_running = false;
-                break;
-            case SDL_SCANCODE_W:
-                set_camera_speed(&(app->camera), 1);
-                break;
-            case SDL_SCANCODE_S:
-                set_camera_speed(&(app->camera), -1);
-                break;
-            case SDL_SCANCODE_A:
-                set_camera_side_speed(&(app->camera), 1);
-                break;
-            case SDL_SCANCODE_D:
-                set_camera_side_speed(&(app->camera), -1);
-                break;
-            case SDL_SCANCODE_Q:
-                set_camera_vertical_speed(&(app->camera), 1);
-                break;
-            case SDL_SCANCODE_E:
-                set_camera_vertical_speed(&(app->camera), -1);
-                break;
-            case SDL_SCANCODE_SPACE:
-                launch_firework(&(app->scene), PATTERN_PEONY);
-                break;
-            case SDL_SCANCODE_U:
-                launch_firework(&(app->scene), PATTERN_COMET);
-                break;
-            case SDL_SCANCODE_I:
-                launch_firework(&(app->scene), PATTERN_CROSSETTE);
-                break;
-            case SDL_SCANCODE_O:
-                launch_firework(&(app->scene), PATTERN_RING);
-                break;
-            case SDL_SCANCODE_P:
-                launch_firework(&(app->scene), PATTERN_WILLOW);
-                break;
-            case SDL_SCANCODE_H:
-                launch_firework(&(app->scene), PATTERN_PALM);
-                break;
-            case SDL_SCANCODE_J:
-                launch_firework(&(app->scene), PATTERN_FISH);
-                break;
-            case SDL_SCANCODE_K:
-                launch_firework(&(app->scene), PATTERN_STROBE);
-                break;
-            case SDL_SCANCODE_L:
-                launch_firework(&(app->scene), PATTERN_GHOST);
-                break;
-            case SDL_SCANCODE_B:
-                launch_firework(&(app->scene), PATTERN_TOURBILLION);
-                break;
-            case SDL_SCANCODE_N:
-                launch_firework(&(app->scene), PATTERN_NISHIKI_KAMURO);
-                break;
-            case SDL_SCANCODE_M:
-                launch_firework(&(app->scene), PATTERN_CHRYSANTHEMUM);
-                break;
-            default:
-                break;
-            }
-            break;
-        case SDL_KEYUP:
-            switch (event.key.keysym.scancode) {
-            case SDL_SCANCODE_W:
-            case SDL_SCANCODE_S:
-                set_camera_speed(&(app->camera), 0);
-                break;
-            case SDL_SCANCODE_A:
-            case SDL_SCANCODE_D:
-                set_camera_side_speed(&(app->camera), 0);
-                break;
-            case SDL_SCANCODE_Q:
-            case SDL_SCANCODE_E:
-                set_camera_vertical_speed(&(app->camera), 0);
-                break;
-            default:
-                break;
-            }
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            is_mouse_down = true;
-            break;
-        case SDL_MOUSEMOTION:
-            SDL_GetMouseState(&x, &y);
-            if (is_mouse_down) {
-                rotate_camera(&(app->camera), mouse_x - x, mouse_y - y);
-            }
-            mouse_x = x;
-            mouse_y = y;
-            break;
-        case SDL_MOUSEBUTTONUP:
-            is_mouse_down = false;
-            break;
-        case SDL_QUIT:
+        if (event.type == SDL_QUIT) {
             app->is_running = false;
-            break;
-        default:
-            break;
+        }
+
+        switch (app->current_state) {
+            case STATE_MAIN_MENU:
+                handle_menu_events(app, &event, MAIN_MENU_COUNT, 300, get_main_menu_label_size);
+                break;
+
+            case STATE_SIMULATION:
+                handle_simulation_events(app, &event);
+                break;
+
+            case STATE_SETTINGS:
+                handle_settings_events(app, &event);
+                break;
+            
+            case STATE_PAUSED:
+                handle_menu_events(app, &event, PAUSE_MENU_COUNT, 250, get_pause_menu_label_size);
+                break;
         }
     }
 }
@@ -225,29 +177,62 @@ void update_app(App* app)
     elapsed_time = current_time - app->uptime;
     app->uptime = current_time;
 
-    if (elapsed_time > 0.05) {
-        elapsed_time = 0.05;
-    }
+    if (app->current_state == STATE_SIMULATION) {
+        if (elapsed_time > 0.05) {
+            elapsed_time = 0.05;
+        }
 
-    update_camera(&(app->camera), elapsed_time);
-    update_scene(&(app->scene), elapsed_time);
+        update_camera(&(app->camera), elapsed_time);
+        update_scene(&(app->scene), elapsed_time);
+    }
 }
 
 void render_app(App* app)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_MODELVIEW);
 
-    glPushMatrix();
-    set_view(&(app->camera));
-    render_scene(&(app->scene));
-    glPopMatrix();
+    if (app->current_state == STATE_MAIN_MENU || 
+       (app->current_state == STATE_SETTINGS && app->previous_state == STATE_MAIN_MENU)) {
+        render_background(app->background_texture);
+    }
+    else {
+        glPushMatrix();
+        set_view(&(app->camera));
+        render_scene(&(app->scene));
+        glPopMatrix();
+    }
+
+    switch (app->current_state) {
+        case STATE_MAIN_MENU:
+            render_dim_overlay();
+            render_menu(get_main_menu_labels(), MAIN_MENU_COUNT, app->menu_selection, app->is_confirmed, 300);
+            break;
+
+        case STATE_SETTINGS:
+            render_dim_overlay();
+            render_settings(app->menu_selection, app->scene.global_brightness, app->scene.particle_intensity);
+            break;
+
+        case STATE_SIMULATION:
+            break;
+
+        case STATE_PAUSED:
+            render_dim_overlay();
+            render_menu(get_pause_menu_labels(), PAUSE_MENU_COUNT, app->menu_selection, app->is_confirmed, 250);
+            break;
+    }
+
+    if (app->is_help_shown) {
+        render_help_overlay(app);
+    }
 
     SDL_GL_SwapWindow(app->window);
 }
 
 void destroy_app(App* app)
 {
+    destroy_user_interface();
+
     if (app->gl_context != NULL) {
         SDL_GL_DeleteContext(app->gl_context);
     }
@@ -256,5 +241,6 @@ void destroy_app(App* app)
         SDL_DestroyWindow(app->window);
     }
 
+    TTF_Quit();
     SDL_Quit();
 }

@@ -1,2 +1,4 @@
 /assets/
+.clangd
+compile_flags.txt
 fireworks.exe

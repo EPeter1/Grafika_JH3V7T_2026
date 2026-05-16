@@ -1,9 +1,10 @@
-#include <GL/glew.h>
-
 #include "camera.h"
+
 #include "utils.h"
 
+#include <GL/glew.h>
 #include <GL/glu.h>
+
 #include <math.h>
 
 void init_camera(Camera* camera)
@@ -93,4 +94,26 @@ void set_camera_side_speed(Camera* camera, double speed)
 void set_camera_vertical_speed(Camera* camera, double speed)
 {
     camera->speed.z = speed;
+}
+
+void set_orthogonal_view(int width, int height) {
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+
+    gluOrtho2D(0.0, (double)width, (double)height, 0.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+}
+
+void restore_perspective_view() {
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
+    glMatrixMode(GL_MODELVIEW);
 }

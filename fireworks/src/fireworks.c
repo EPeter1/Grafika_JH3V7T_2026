@@ -1,11 +1,16 @@
-#include <GL/glew.h>
-
-#include "explosion.h"
 #include "fireworks.h"
+
+#include "color.h"
+#include "explosion.h"
+#include "firework_pattern.h"
 #include "scene.h"
 #include "spark.h"
-#include "texture.h"
+#include "utils.h"
+#include "vec3.h"
 
+#include <GL/glew.h>
+
+#include <stdbool.h>
 #include <stdlib.h>
 
 void launch_firework(Scene* scene, FireworkPattern pattern) {
@@ -139,7 +144,7 @@ void render_fireworks(const Scene* scene) {
         else if (firework->state == FIREWORK_EXPLODED) {
             for (int j = 0; j < MAX_SPARKS; j++) {
                 if (firework->sparks[j].current_life > 0) {
-                    render_spark(firework, &(firework->sparks[j]));
+                    render_spark(firework, &(firework->sparks[j]), scene->particle_intensity);
                 }
             }
         }

@@ -1,12 +1,15 @@
-#include <GL/glew.h>
+#include "spark.h"
 
 #include "color.h"
+#include "firework_pattern.h"
 #include "fireworks.h"
-#include "spark.h"
 #include "utils.h"
+#include "vec3.h"
 
-#define _USE_MATH_DEFINES
+#include <GL/glew.h>
+
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -113,7 +116,7 @@ void apply_pattern_behavior(Firework* firework, Spark* spark, const PhysicsConfi
     }
 }
 
-void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* color, float* size) {
+void apply_spark_visuals(const Firework* firework, const Spark* spark, float intensity, Color* color, float* size) {
     *color = spark->color;
     *size = 3.0f;
 
@@ -151,6 +154,10 @@ void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* co
         default:
             break;
     }
+
+    color->red *= intensity;
+    color->green *= intensity;
+    color->blue *= intensity;
 }
 
 void handle_ghost_logic(const Firework* firework, const Spark* spark, Color* color, float* size) {
@@ -271,14 +278,14 @@ bool should_spark_render(const Firework* firework, const Spark* spark) {
     return true;
 }
 
-void render_spark(const Firework* firework, const Spark* spark) {
+void render_spark(const Firework* firework, const Spark* spark, float intensity) {
     if (!should_spark_render(firework, spark)) {
         return;
     }
 
     Color spark_color;
     float spark_size;
-    apply_spark_visuals(firework, spark, &spark_color, &spark_size);
+    apply_spark_visuals(firework, spark, intensity, &spark_color, &spark_size);
 
     draw_spark_trail(spark, spark_color);
     draw_spark_head(spark->position, spark_color, spark_size);

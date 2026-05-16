@@ -1,8 +1,14 @@
 #include "explosion.h"
-#include "utils.h"
 
-#define _USE_MATH_DEFINES
+#include "color.h"
+#include "firework_pattern.h"
+#include "fireworks.h"
+#include "spark.h"
+#include "utils.h"
+#include "vec3.h"
+
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -1,5 +1,10 @@
 #include "app.h"
 
+#include <SDL2/SDL_main.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+
 /**
  * Main function
  */

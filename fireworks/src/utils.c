@@ -1,6 +1,7 @@
 #include "utils.h"
 
-#define _USE_MATH_DEFINES
+#include "vec3.h"
+
 #include <math.h>
 #include <stdlib.h>
 
