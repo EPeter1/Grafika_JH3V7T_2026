@@ -3,6 +3,7 @@
 #include "color.h"
 #include "firework_pattern.h"
 #include "fireworks.h"
+#include "gl_state.h"
 #include "utils.h"
 #include "vec3.h"
 
@@ -228,6 +229,8 @@ void draw_spark_trail(const Spark* spark, Color color) {
     vec3 position = spark->position;
     float base_alpha = color.alpha;
 
+    set_state_texture_2d(GL_FALSE);
+
     glLineWidth(2.0f);
     glBegin(GL_LINE_STRIP);
         glColor4f(color.red, color.green, color.blue, base_alpha);
@@ -249,12 +252,22 @@ void draw_spark_head(vec3 position, Color color, float size) {
     if (size <= 0.0f || color.alpha <= 0.01f) {
         return;
     }
+    /*
+    set_state_texture_2d(GL_TRUE);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
 
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+    glEnable(GL_POINT_SPRITE);
+    glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+    */
     glPointSize(size);
     glBegin(GL_POINTS);
         glColor4f(color.red, color.green, color.blue, color.alpha);
         glVertex3f(position.x, position.y, position.z);
     glEnd();
+
+    // glDisable(GL_POINT_SPRITE);
 }
 
 bool should_spark_render(const Firework* firework, const Spark* spark) {

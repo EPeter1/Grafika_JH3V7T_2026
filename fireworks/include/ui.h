@@ -40,7 +40,7 @@ Label* get_pause_menu_labels();
 void get_main_menu_label_size(int index, int* width, int* height);
 void get_pause_menu_label_size(int index, int* width, int* height);
 void init_user_interface(TTF_Font* font);
-void init_ui_rendering();
+void init_ui_rendering(int width, int height);
 void draw_rectangle(GLuint texture_id, int x, int y, int width, int height, Color color);
 void render_background(GLuint texture_id);
 void render_menu(Label* labels, int item_count, int selection, bool is_confirmed, int start_y);

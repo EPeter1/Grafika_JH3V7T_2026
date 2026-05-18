@@ -3,6 +3,7 @@
 #include "app.h"
 #include "camera.h"
 #include "color.h"
+#include "gl_state.h"
 #include "texture.h"
 
 #include <GL/glew.h>
@@ -81,23 +82,25 @@ void init_user_interface(TTF_Font* font) {
     help_label.texture_id = load_text_texture_wrapped(font, help_text, color_white, &help_label.width, &help_label.height, 800);
 }
 
-void init_ui_rendering() {
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_TEXTURE_2D);
+void init_ui_rendering(int width, int height) {
+    set_orthogonal_view(width, height);
+
+    set_state_lighting(GL_FALSE);
+    set_state_depth_test(GL_FALSE);
+    set_state_texture_2d(GL_TRUE);
+    set_state_blend(GL_TRUE);
+    set_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void draw_rectangle(GLuint texture_id, int x, int y, int width, int height, Color color) {
     glColor4f(color.red, color.green, color.blue, color.alpha);
 
     if (texture_id != 0) {
-        glEnable(GL_TEXTURE_2D);
+        set_state_texture_2d(GL_TRUE);
         glBindTexture(GL_TEXTURE_2D, texture_id);
     }
     else {
-        glDisable(GL_TEXTURE_2D);
+        set_state_texture_2d(GL_FALSE);
     }
 
     glBegin(GL_QUADS);
@@ -106,10 +109,6 @@ void draw_rectangle(GLuint texture_id, int x, int y, int width, int height, Colo
         glTexCoord2f(1.0f, 1.0f); glVertex2f((float)x + width, (float)y + height);
         glTexCoord2f(0.0f, 1.0f); glVertex2f((float)x, (float)y + height);
     glEnd();
-
-    if (texture_id != 0) {
-        glDisable(GL_TEXTURE_2D);
-    }
 }
 
 void render_background(GLuint texture_id) {
@@ -121,8 +120,7 @@ void render_background(GLuint texture_id) {
     int height;
     SDL_GL_GetDrawableSize(SDL_GL_GetCurrentWindow(), &width, &height);
 
-    set_orthogonal_view(width, height);
-    init_ui_rendering();
+    init_ui_rendering(width, height);
 
     draw_rectangle(texture_id, 0, 0, width, height, COLOR_NO_HIGHLIGHT);
 
@@ -134,8 +132,7 @@ void render_menu(Label* labels, int item_count, int selection, bool is_confirmed
     int height;
     SDL_GL_GetDrawableSize(SDL_GL_GetCurrentWindow(), &width, &height);
 
-    set_orthogonal_view(width, height);
-    init_ui_rendering();
+    init_ui_rendering(width, height);
 
     for (int i = 0; i < item_count; i++) {
         Color item_color = (i == selection) ? COLOR_HIGHLIGHT : COLOR_NO_HIGHLIGHT;
@@ -158,8 +155,7 @@ void render_settings(int selection, float brightness, float intensity) {
     int height;
     SDL_GL_GetDrawableSize(SDL_GL_GetCurrentWindow(), &width, &height);
 
-    set_orthogonal_view(width, height);
-    init_ui_rendering();
+    init_ui_rendering(width, height);
 
     float values[2] = { brightness, intensity };
 
@@ -176,7 +172,7 @@ void render_settings(int selection, float brightness, float intensity) {
         int bar_x = width / 2 + 50;
         int bar_y = text_y + 5;
 
-        glDisable(GL_TEXTURE_2D);
+        set_state_texture_2d(GL_FALSE);
         glColor3f(0.3f, 0.3f, 0.3f);
         glBegin(GL_LINE_LOOP);
             glVertex2f(bar_x, bar_y);
@@ -184,7 +180,7 @@ void render_settings(int selection, float brightness, float intensity) {
             glVertex2f(bar_x + bar_width, bar_y + bar_height);
             glVertex2f(bar_x, bar_y + bar_height);
         glEnd();
-        glEnable(GL_TEXTURE_2D);
+        set_state_texture_2d(GL_TRUE);
 
         int fill_width = (int)(bar_width * values[i]);
         Color bar_color = (i == selection) ? COLOR_HIGHLIGHT : (Color){0.7f, 0.7f, 0.0f, 1.0f};
@@ -227,8 +223,7 @@ void render_help_overlay(App* app) {
     int height;
     SDL_GL_GetDrawableSize(app->window, &width, &height);
 
-    set_orthogonal_view(width, height);
-    init_ui_rendering();
+    init_ui_rendering(width, height);
 
     draw_rectangle(0, 0, 0, width, height, COLOR_OVERLAY);
 
@@ -244,8 +239,7 @@ void render_dim_overlay() {
     int height;
     SDL_GL_GetDrawableSize(SDL_GL_GetCurrentWindow(), &width, &height);
 
-    set_orthogonal_view(width, height);
-    init_ui_rendering();
+    init_ui_rendering(width, height);
 
     draw_rectangle(0, 0, 0, width, height, COLOR_OVERLAY);
 

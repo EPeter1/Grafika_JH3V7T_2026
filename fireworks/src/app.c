@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "event.h"
 #include "fireworks.h"
+#include "gl_state.h"
 #include "scene.h"
 #include "texture.h"
 #include "ui.h"
@@ -35,6 +36,7 @@ void init_app(App* app, int width, int height)
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     app->window = SDL_CreateWindow(
         "Fireworks!",
@@ -114,17 +116,16 @@ void init_opengl()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glEnable(GL_DEPTH_TEST);
-
+    set_state_depth_test(GL_TRUE);
     glClearDepth(1.0);
 
-    glEnable(GL_TEXTURE_2D);
+    set_state_texture_2d(GL_TRUE);
 
-    glEnable(GL_LIGHTING);
+    set_state_lighting(GL_TRUE);
     glEnable(GL_LIGHT0);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    set_state_blend(GL_TRUE);
+    set_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void reshape(GLsizei width, GLsizei height)
@@ -189,7 +190,10 @@ void update_app(App* app)
 
 void render_app(App* app)
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    set_state_depth_mask(GL_TRUE); 
+    glStencilMask(0xFF);
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     if (app->current_state == STATE_MAIN_MENU || 
        (app->current_state == STATE_SETTINGS && app->previous_state == STATE_MAIN_MENU)) {

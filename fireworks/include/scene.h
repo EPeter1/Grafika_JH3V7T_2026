@@ -47,4 +47,7 @@ void render_scene(const Scene* scene);
  */
 void draw_origin();
 
+void draw_water_surface(GLuint texture_id, float brightness);
+void render_reflection(const Scene* scene);
+
 #endif /* SCENE_H */

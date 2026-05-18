@@ -122,15 +122,6 @@ void update_exploded_firework(Scene* scene, Firework* firework, float delta_time
 }
 
 void render_fireworks(const Scene* scene) {
-/*
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, scene->texture_id);
-
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-    glEnable(GL_POINT_SPRITE);
-    glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-*/
     for (int i = 0; i < MAX_FIREWORKS; i++) {
         const Firework* firework = &(scene->fireworks[i]);
 
@@ -149,8 +140,4 @@ void render_fireworks(const Scene* scene) {
             }
         }
     }
-/*
-    glDisable(GL_POINT_SPRITE);
-    glDisable(GL_TEXTURE_2D);
-*/
 }

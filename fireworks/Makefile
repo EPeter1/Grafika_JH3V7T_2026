@@ -31,6 +31,7 @@ SRC = \
 	src/event.c \
 	src/explosion.c \
 	src/fireworks.c \
+	src/gl_state.c \
 	src/main.c \
 	src/scene.c \
 	src/spark.c \

@@ -8,13 +8,25 @@
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <stdbool.h>
 #include <stdio.h>
 
 GLuint load_texture(char* filename)
 {
-    SDL_Surface* surface = IMG_Load(filename);
-    if (surface == NULL) {
+    SDL_Surface* temp_surface = IMG_Load(filename);
+    if (temp_surface == NULL) {
         printf("[ERROR] Failed to load image %s: %s\n", filename, IMG_GetError());
+        return 0;
+    }
+
+    bool has_alpha = (temp_surface->format->BytesPerPixel == 4);
+    Uint32 pixel_format = has_alpha ? SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24;
+
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(temp_surface, pixel_format, 0);
+    SDL_FreeSurface(temp_surface);
+
+    if (surface == NULL) {
+        printf("[ERROR] Failed to convert surface: %s\n", SDL_GetError());
         return 0;
     }
 
@@ -22,18 +34,10 @@ GLuint load_texture(char* filename)
     glGenTextures(1, &texture_name);
     glBindTexture(GL_TEXTURE_2D, texture_name);
 
-    GLint internal_format;
-    GLenum format;
+    GLint internal_format = has_alpha ? GL_RGBA : GL_RGB;
+    GLenum format = has_alpha ? GL_RGBA : GL_RGB;
 
-    if (surface->format->BytesPerPixel == 4) {
-        internal_format = GL_RGBA;
-        format = GL_RGBA;
-    }
-    else {
-        internal_format = GL_RGB;
-        format = GL_RGB;
-    }
-
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
