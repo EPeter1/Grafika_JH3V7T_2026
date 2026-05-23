@@ -30,10 +30,12 @@ SRC = \
 	src/color.c \
 	src/event.c \
 	src/explosion.c \
+	src/firework_renderer.c \
 	src/fireworks.c \
 	src/gl_state.c \
 	src/main.c \
 	src/scene.c \
+	src/shader.c \
 	src/spark.c \
 	src/texture.c \
 	src/ui.c \

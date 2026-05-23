@@ -1,17 +1,18 @@
 #include "scene.h"
 
+#include "firework_renderer.h"
 #include "fireworks.h"
 #include "gl_state.h"
 #include "texture.h"
 #include "utils.h"
 
 #include <GL/glew.h>
-#include <obj/draw.h>
-#include <obj/load.h>
+#include <obj/model.h>
 
 void init_scene(Scene* scene)
 {
-    scene->texture_id = load_texture("assets/textures/water.png");
+    scene->water_texture = load_texture("assets/textures/water.png");
+    scene->spark_texture = load_texture("assets/textures/glow.png");
 
     scene->material.ambient.red = 0.0;
     scene->material.ambient.green = 0.0;
@@ -30,9 +31,8 @@ void init_scene(Scene* scene)
     scene->global_brightness = 1.0f;
     scene->particle_intensity = 1.0f;
 
-    for (int i = 0; i < MAX_FIREWORKS; i++) {
-        scene->fireworks[i].state = FIREWORK_READY;
-    }
+    init_fireworks(scene->fireworks);
+    init_firework_renderer(&scene->renderer);
 }
 
 void set_lighting(float brightness)
@@ -79,16 +79,10 @@ void set_material(const Material* material)
 }
 
 void update_scene(Scene* scene, float delta_time) {
-    for (int i = 0; i < MAX_FIREWORKS; i++) {
-        Firework* firework = &(scene->fireworks[i]);
-        
-        if (firework->state == FIREWORK_RISING) {
-            update_rising_firework(firework, delta_time);
-        }
-        else if (firework->state == FIREWORK_EXPLODED) {
-            update_exploded_firework(scene, firework, delta_time);
-        }
-    }
+    update_rising_fireworks(scene->fireworks, delta_time);
+    update_exploded_fireworks(scene->fireworks, delta_time);
+
+    update_firework_buffers(&scene->renderer, scene->fireworks);
 }
 
 void render_scene(const Scene* scene)
@@ -106,7 +100,11 @@ void render_scene(const Scene* scene)
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     set_state_texture_2d(GL_TRUE);
 
-    draw_water_surface(scene->texture_id, scene->global_brightness);
+    glBindBuffer(GL_UNIFORM_BUFFER, scene->renderer.settings_ubo);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float), &scene->particle_intensity);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    draw_water_surface(scene->water_texture, scene->global_brightness);
     render_reflection(scene);
 
     set_state_stencil_test(GL_FALSE);
@@ -122,7 +120,7 @@ void render_scene(const Scene* scene)
     set_state_depth_mask(GL_FALSE);
     set_state_blend_function(GL_SRC_ALPHA, GL_ONE);
 
-    render_fireworks(scene);
+    render_fireworks(&scene->renderer, scene->fireworks, scene->spark_texture);
 }
 
 void draw_origin()
@@ -182,6 +180,15 @@ void render_reflection(const Scene* scene) {
     glPushMatrix();
         glTranslatef(0.0f, 0.0f, -2.0f);
         glScalef(1.0f, 1.0f, -1.0f);
-        render_fireworks(scene);
+        render_fireworks(&scene->renderer, scene->fireworks, scene->spark_texture);
     glPopMatrix();
+}
+
+void destroy_scene(Scene* scene) {
+    free_model(&scene->model);
+
+    glDeleteTextures(1, &scene->water_texture);
+    glDeleteTextures(1, &scene->spark_texture);
+
+    destroy_firework_renderer(&scene->renderer);
 }

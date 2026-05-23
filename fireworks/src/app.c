@@ -14,6 +14,7 @@
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
@@ -34,8 +35,10 @@ void init_app(App* app, int width, int height)
         return;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     app->window = SDL_CreateWindow(
@@ -126,6 +129,8 @@ void init_opengl()
 
     set_state_blend(GL_TRUE);
     set_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
 }
 
 void reshape(GLsizei width, GLsizei height)
@@ -235,6 +240,7 @@ void render_app(App* app)
 
 void destroy_app(App* app)
 {
+    destroy_scene(&app->scene);
     destroy_user_interface();
 
     if (app->gl_context != NULL) {

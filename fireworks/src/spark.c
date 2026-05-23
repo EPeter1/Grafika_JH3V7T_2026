@@ -3,7 +3,6 @@
 #include "color.h"
 #include "firework_pattern.h"
 #include "fireworks.h"
-#include "gl_state.h"
 #include "utils.h"
 #include "vec3.h"
 
@@ -52,7 +51,19 @@ float get_spark_progress(const Spark* spark) {
 }
 
 float get_spark_alpha(float progress, float exponent) {
-    return powf(1.0f - progress, exponent);
+    float base = 1.0f - progress;
+
+    if (exponent == 0.5f) {
+        return sqrtf(base);
+    }
+    if (exponent == 1.0f) {
+        return base;
+    }
+    if (exponent == 2.0f) {
+        return base * base;
+    }
+
+    return powf(base, exponent);
 }
 
 void set_spark_life(Spark* spark, float life) {
@@ -117,7 +128,7 @@ void apply_pattern_behavior(Firework* firework, Spark* spark, const PhysicsConfi
     }
 }
 
-void apply_spark_visuals(const Firework* firework, const Spark* spark, float intensity, Color* color, float* size) {
+void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* color, float* size) {
     *color = spark->color;
     *size = 3.0f;
 
@@ -155,10 +166,6 @@ void apply_spark_visuals(const Firework* firework, const Spark* spark, float int
         default:
             break;
     }
-
-    color->red *= intensity;
-    color->green *= intensity;
-    color->blue *= intensity;
 }
 
 void handle_ghost_logic(const Firework* firework, const Spark* spark, Color* color, float* size) {
@@ -210,64 +217,17 @@ void handle_ghost_logic(const Firework* firework, const Spark* spark, Color* col
     }
 }
 
-void update_spark_trail(Spark* spark, float delta_time) {
+void update_spark_trail(Spark* spark, Trail* trails, float delta_time) {
+    Trail* trail = &trails[spark->trail_index];
     float sample_rate = 0.0166f;
-    spark->trail.timer += delta_time;
 
-    while (spark->trail.timer >= sample_rate) {
-        spark->trail.history[spark->trail.pointer] = spark->position;
-        spark->trail.pointer = (spark->trail.pointer + 1) % spark->trail.length;
-        spark->trail.timer -= sample_rate;
+    trail->timer += delta_time;
+
+    while (trail->timer >= sample_rate) {
+        trail->history[trail->pointer] = spark->position;
+        trail->pointer = (trail->pointer + 1) % MAX_HISTORY;
+        trail->timer -= sample_rate;
     }
-}
-
-void draw_spark_trail(const Spark* spark, Color color) {
-    if (spark->trail.length <= 1) {
-        return;
-    }
-
-    vec3 position = spark->position;
-    float base_alpha = color.alpha;
-
-    set_state_texture_2d(GL_FALSE);
-
-    glLineWidth(2.0f);
-    glBegin(GL_LINE_STRIP);
-        glColor4f(color.red, color.green, color.blue, base_alpha);
-        glVertex3f(position.x, position.y, position.z);
-
-        for (int i = 0; i < spark->trail.length; i++) {
-            int index = (spark->trail.pointer - 1 - i + spark->trail.length) % spark->trail.length;
-
-            float trail_fade = 1.0f - ((float)i / (float)(spark->trail.length - 1));
-            vec3 history = spark->trail.history[index];
-
-            glColor4f(color.red, color.green, color.blue, base_alpha * trail_fade);
-            glVertex3f(history.x, history.y, history.z);
-        }
-    glEnd();
-}
-
-void draw_spark_head(vec3 position, Color color, float size) {
-    if (size <= 0.0f || color.alpha <= 0.01f) {
-        return;
-    }
-    /*
-    set_state_texture_2d(GL_TRUE);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-    glEnable(GL_POINT_SPRITE);
-    glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-    */
-    glPointSize(size);
-    glBegin(GL_POINTS);
-        glColor4f(color.red, color.green, color.blue, color.alpha);
-        glVertex3f(position.x, position.y, position.z);
-    glEnd();
-
-    // glDisable(GL_POINT_SPRITE);
 }
 
 bool should_spark_render(const Firework* firework, const Spark* spark) {
@@ -289,17 +249,4 @@ bool should_spark_render(const Firework* firework, const Spark* spark) {
     }
 
     return true;
-}
-
-void render_spark(const Firework* firework, const Spark* spark, float intensity) {
-    if (!should_spark_render(firework, spark)) {
-        return;
-    }
-
-    Color spark_color;
-    float spark_size;
-    apply_spark_visuals(firework, spark, intensity, &spark_color, &spark_size);
-
-    draw_spark_trail(spark, spark_color);
-    draw_spark_head(spark->position, spark_color, spark_size);
 }

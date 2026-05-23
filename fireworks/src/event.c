@@ -177,7 +177,7 @@ void handle_simulation_events(App* app, SDL_Event* event) {
                     break;
 
                 default:
-                    try_launch_firework(app, event->key.keysym.scancode);
+                    try_launch_firework(app->scene.fireworks, event->key.keysym.scancode);
                     break;
             }
             break;
@@ -357,7 +357,7 @@ void handle_confirm_mouse_event(App* app, int mouse_x, int mouse_y) {
     }
 }
 
-void try_launch_firework(App* app, SDL_Scancode scancode) {
+void try_launch_firework(Firework* fireworks, SDL_Scancode scancode) {
     struct { SDL_Scancode code; FireworkPattern pattern; } patterns[] = {
         { SDL_SCANCODE_SPACE, PATTERN_PEONY },
         { SDL_SCANCODE_U,     PATTERN_COMET },
@@ -376,7 +376,7 @@ void try_launch_firework(App* app, SDL_Scancode scancode) {
     int count = sizeof(patterns) / sizeof(patterns[0]);
     for (int i = 0; i < count; i++) {
         if (patterns[i].code == scancode) {
-            launch_firework(&(app->scene), patterns[i].pattern);
+            launch_firework(fireworks, patterns[i].pattern);
             break;
         }
     }

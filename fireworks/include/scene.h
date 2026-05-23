@@ -1,20 +1,22 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include "firework_renderer.h"
 #include "fireworks.h"
-#include "texture.h"
 #include "utils.h"
 
 #include <obj/model.h>
 
 typedef struct Scene
 {
-    Model cube;
+    Model model;
     Material material;
-    GLuint texture_id;
+    GLuint water_texture;
+    GLuint spark_texture;
     float global_brightness;
     float particle_intensity;
     Firework fireworks[MAX_FIREWORKS];
+    FireworkRenderer renderer;
 } Scene;
 
 /**
@@ -49,5 +51,6 @@ void draw_origin();
 
 void draw_water_surface(GLuint texture_id, float brightness);
 void render_reflection(const Scene* scene);
+void destroy_scene(Scene* scene);
 
 #endif /* SCENE_H */

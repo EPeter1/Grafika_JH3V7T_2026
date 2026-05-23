@@ -21,10 +21,12 @@ typedef struct Trail {
 typedef struct Spark {
     vec3 position;
     vec3 speed;
-    Trail trail;
+    int trail_index;
     float max_life;
     float current_life;
     Color color;
+    Color render_color;
+    float size;
     bool is_leader;
 } Spark;
 
@@ -42,12 +44,11 @@ float get_spark_alpha(float progress, float exponent);
 void set_spark_life(Spark* spark, float life);
 void apply_spark_physics(Spark* spark, const PhysicsConfig config, float delta_time);
 void apply_pattern_behavior(Firework* firework, Spark* spark, const PhysicsConfig config, float delta_time);
-void apply_spark_visuals(const Firework* firework, const Spark* spark, float intensity, Color* color, float* size);
+void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* color, float* size);
 void handle_ghost_logic(const Firework* firework, const Spark* spark, Color* color, float* size);
-void update_spark_trail(Spark* spark, float delta_time);
+void update_spark_trail(Spark* spark, Trail* trails, float delta_time);
 void draw_spark_trail(const Spark* spark, Color color);
 void draw_spark_head(vec3 position, Color color, float size);
 bool should_spark_render(const Firework* firework, const Spark* spark);
-void render_spark(const Firework* firework, const Spark* spark, float intensity);
 
 #endif // SPARK_H

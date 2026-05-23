@@ -39,26 +39,27 @@ void init_explosion(Firework* firework, int spark_count, Color color) {
 
     for (int i = 0; i < spark_count && i < MAX_SPARKS; i++) {
         Spark* spark = &firework->sparks[i];
+        Trail* trail = &firework->trails[i];
 
         spark->position = firework->position;
-
         set_spark_life(spark, 1.0f);
 
         spark->is_leader = false;
         spark->color = color;
 
-        spark->trail.pointer = 0;
-        spark->trail.timer = 0.0f;
+        spark->trail_index = i;
+        trail->pointer = 0;
+        trail->timer = 0.0f;
 
         for(int j = 0; j < MAX_HISTORY; j++) {
-            spark->trail.history[j] = spark->position;
+            trail->history[j] = spark->position;
         }
 
         explosion_table[firework->pattern](firework, spark);
 
-        if (spark->trail.length < 1 || spark->trail.length > MAX_HISTORY) {
+        if (trail->length < 1 || trail->length > MAX_HISTORY) {
             printf("[ERROR] Invalid trail length (%d) for pattern %d at spark %d.\n",
-                    spark->trail.length, firework->pattern, i);
+                    trail->length, firework->pattern, i);
             exit(1);
         }
     }
@@ -86,7 +87,7 @@ void explode_comet(Firework* firework, Spark* spark) {
     float speed = rand_range(0.6f, 1.0f);
     spark->speed = scale_vec3(add_vec3(firework->speed, direction), speed);
 
-    spark->trail.length = MAX_HISTORY;
+    firework->trails[index].length = MAX_HISTORY;
 
     float life = spark->is_leader ? 2.0f : rand_range(1.0f, 1.5f);
     set_spark_life(spark, life);
@@ -133,13 +134,11 @@ void explode_crossette(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, 0.6f);
 
-    spark->trail.length = 12;
+    firework->trails[index].length = 12;
     spark->is_leader = true;
 }
 
 void explode_peony(Firework* firework, Spark* spark) {
-    (void)firework;
-
     vec3 direction = get_spherical_direction();
 
     float base_speed = 0.3f;
@@ -148,7 +147,8 @@ void explode_peony(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, 3.0f);
 
-    spark->trail.length = 2;
+    int index = get_spark_index(firework, spark);
+    firework->trails[index].length = 2;
 }
 
 void explode_ring(Firework* firework, Spark* spark) {
@@ -162,7 +162,7 @@ void explode_ring(Firework* firework, Spark* spark) {
 
         set_spark_life(spark, rand_range(0.8f, 1.2f));
 
-        spark->trail.length = 2;
+        firework->trails[index].length = 2;
         spark->is_leader = false;
     }
     else {
@@ -185,14 +185,12 @@ void explode_ring(Firework* firework, Spark* spark) {
 
         set_spark_life(spark, 2.0f);
 
-        spark->trail.length = 10;
+        firework->trails[index].length = 10;
         spark->is_leader = true;
     }
 }
 
 void explode_willow(Firework* firework, Spark* spark) {
-    (void)firework;
-
     vec3 up_axis = { 0.0f, 0.0f, 1.0f };
     float spread = 0.6f;
     vec3 direction = get_cone_direction(up_axis, spread);
@@ -202,7 +200,8 @@ void explode_willow(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, rand_range(5.0f, 8.0f));
 
-    spark->trail.length = 20;
+    int index = get_spark_index(firework, spark);
+    firework->trails[index].length = MAX_HISTORY;
     spark->is_leader = true;
 }
 
@@ -232,13 +231,11 @@ void explode_palm(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, rand_range(1.5f, 2.5f));
 
-    spark->trail.length = 20;
+    firework->trails[index].length = MAX_HISTORY;
     spark->is_leader = true;
 }
 
 void explode_fish(Firework* firework, Spark* spark) {
-    (void)firework;
-
     vec3 direction = get_spherical_direction();
 
     float speed = rand_range(0.2f, 0.6f);
@@ -246,13 +243,12 @@ void explode_fish(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, rand_range(0.6f, 1.0f));
 
-    spark->trail.length = 4;
+    int index = get_spark_index(firework, spark);
+    firework->trails[index].length = 4;
     spark->is_leader = true;
 }
 
 void explode_strobe(Firework* firework, Spark* spark) {
-    (void)firework;
-    
     vec3 direction = get_spherical_direction();
     
     float speed = rand_range(0.2f, 0.6f);
@@ -260,7 +256,8 @@ void explode_strobe(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, rand_range(1.5f, 2.5f));
 
-    spark->trail.length = 2;
+    int index = get_spark_index(firework, spark);
+    firework->trails[index].length = 2;
     spark->is_leader = true;
 }
 
@@ -274,7 +271,7 @@ void explode_ghost(Firework* firework, Spark* spark) {
 
         set_spark_life(spark, 3.0f);
         spark->is_leader = true;
-        spark->trail.length = 1;
+        firework->trails[index].length = 1;
     }
     else {
         float speed = 0.5f;
@@ -282,7 +279,7 @@ void explode_ghost(Firework* firework, Spark* spark) {
 
         set_spark_life(spark, 4.0f);
         spark->is_leader = false;
-        spark->trail.length = 2;
+        firework->trails[index].length = 2;
     }
 }
 
@@ -306,13 +303,11 @@ void explode_tourbillion(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, rand_range(3.0f, 4.0f));
 
-    spark->trail.length = MAX_HISTORY;
+    firework->trails[index].length = MAX_HISTORY;
     spark->is_leader = true;
 }
 
 void explode_nishiki_kamuro(Firework* firework, Spark* spark) {
-    (void)firework;
-
     vec3 direction = get_spherical_direction();
     direction.z -= 0.3f;
     direction = normalize_vec3(direction);
@@ -322,7 +317,8 @@ void explode_nishiki_kamuro(Firework* firework, Spark* spark) {
 
     set_spark_life(spark, rand_range(4.0f, 7.0f));
 
-    spark->trail.length = MAX_HISTORY;
+    int index = get_spark_index(firework, spark);
+    firework->trails[index].length = MAX_HISTORY;
     spark->is_leader = true;
 }
 
@@ -335,7 +331,7 @@ void explode_chrysanthemum(Firework* firework, Spark* spark) {
 
         set_spark_life(spark, 2.0f);
 
-        spark->trail.length = 1;
+        firework->trails[index].length = 1;
         spark->is_leader = false;
     }
     else {
@@ -344,7 +340,7 @@ void explode_chrysanthemum(Firework* firework, Spark* spark) {
         spark->speed = scale_vec3(direction, speed);
 
         set_spark_life(spark, 1.5f);
-        spark->trail.length = MAX_HISTORY;
+        firework->trails[index].length = MAX_HISTORY;
         spark->is_leader = true;
     }
 }
