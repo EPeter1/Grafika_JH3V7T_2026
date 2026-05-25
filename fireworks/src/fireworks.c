@@ -151,14 +151,14 @@ void update_exploded_fireworks(Firework* fireworks, float delta_time) {
     }
 }
 
-void draw_spark_heads(const FireworkRenderer* renderer, GLuint spark_texture) {
+void draw_spark_heads(const FireworkRenderer* renderer) {
     if (renderer->spark_vertices <= 0) {
         return;
     }
     glUseProgram(renderer->spark_shader);
 
     set_state_texture_2d(GL_TRUE);
-    glBindTexture(GL_TEXTURE_2D, spark_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer->spark_texture);
 
     glEnable(GL_POINT_SPRITE);
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
@@ -209,16 +209,16 @@ void draw_rising_fireworks(const Firework* fireworks) {
     }
 }
 
-void draw_exploded_fireworks(const FireworkRenderer* renderer, GLuint spark_texture) {
-    draw_spark_heads(renderer, spark_texture);
+void draw_exploded_fireworks(const FireworkRenderer* renderer) {
+    draw_spark_heads(renderer);
     draw_spark_trails(renderer);
 
     glBindVertexArray(0);
 }
 
-void render_fireworks(const FireworkRenderer* renderer, const Firework* fireworks, GLuint spark_texture) {
+void render_fireworks(const FireworkRenderer* renderer, const Firework* fireworks) {
     draw_rising_fireworks(fireworks);
-    draw_exploded_fireworks(renderer, spark_texture);
+    draw_exploded_fireworks(renderer);
 
     glUseProgram(0);
 }

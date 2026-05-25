@@ -3,10 +3,12 @@
 #include "fireworks.h"
 #include "shader.h"
 #include "spark.h"
+#include "texture.h"
 
 #include <GL/glew.h>
 #include <SDL2/SDL_stdinc.h>
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,21 +69,6 @@ static void init_trail_mesh(FireworkRenderer* renderer) {
 
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(TrailVertex), (void*)offsetof(TrailVertex, fade));
-}
-
-static void init_settings_ubo(FireworkRenderer* renderer) {
-    GLuint spark_block_index = glGetUniformBlockIndex(renderer->spark_shader, "SceneSettings");
-    GLuint trail_block_index = glGetUniformBlockIndex(renderer->trail_shader, "SceneSettings");
-
-    glUniformBlockBinding(renderer->spark_shader, spark_block_index, 0);
-    glUniformBlockBinding(renderer->trail_shader, trail_block_index, 0);
-
-    glGenBuffers(1, &renderer->settings_ubo);
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer->settings_ubo);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(float), NULL, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, renderer->settings_ubo);
-
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 static int upload_spark_data(FireworkRenderer* renderer, const Firework* fireworks) {
@@ -198,12 +185,18 @@ void init_firework_renderer(FireworkRenderer* renderer) {
     renderer->trail_vertices = 0;
     renderer->trail_indices = 0;
 
+    renderer->spark_texture = load_texture("assets/textures/glow.png", GL_CLAMP_TO_EDGE, false);
     renderer->spark_shader = create_shader("assets/shaders/spark.vert", "assets/shaders/spark.frag", spark_attributes);
     renderer->trail_shader = create_shader("assets/shaders/trail.vert", "assets/shaders/trail.frag", trail_attributes);
 
+    GLuint spark_block_index = glGetUniformBlockIndex(renderer->spark_shader, "SceneSettings");
+    GLuint trail_block_index = glGetUniformBlockIndex(renderer->trail_shader, "SceneSettings");
+
+    glUniformBlockBinding(renderer->spark_shader, spark_block_index, 0);
+    glUniformBlockBinding(renderer->trail_shader, trail_block_index, 0);
+
     init_spark_mesh(renderer);
     init_trail_mesh(renderer);
-    init_settings_ubo(renderer);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -232,8 +225,7 @@ void destroy_firework_renderer(FireworkRenderer* renderer) {
     glDeleteBuffers(1, &renderer->trail_vbo);
     glDeleteBuffers(1, &renderer->trail_ibo);
 
-    glDeleteBuffers(1, &renderer->settings_ubo);
-
+    glDeleteTextures(1, &renderer->spark_texture);
     glDeleteProgram(renderer->spark_shader);
     glDeleteProgram(renderer->trail_shader);
 }

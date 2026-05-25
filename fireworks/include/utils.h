@@ -1,19 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "color.h"
 #include "vec3.h"
-
-/**
- * Material
- */
-typedef struct Material
-{
-    Color ambient;
-    Color diffuse;
-    Color specular;
-    float shininess;
-} Material;
 
 /**
  * Calculates radian from degree.

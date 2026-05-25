@@ -40,8 +40,7 @@ typedef struct FireworkRenderer {
     GLuint trail_vbo;
     GLuint trail_ibo;
 
-    GLuint settings_ubo;
-
+    GLuint spark_texture;
     GLuint spark_shader;
     GLuint trail_shader;
 

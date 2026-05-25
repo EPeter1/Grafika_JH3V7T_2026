@@ -39,7 +39,8 @@ SRC = \
 	src/spark.c \
 	src/texture.c \
 	src/ui.c \
-	src/utils.c
+	src/utils.c \
+	src/water.c
 
 OUT = fireworks
 

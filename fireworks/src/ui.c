@@ -55,19 +55,19 @@ void init_user_interface(TTF_Font* font) {
     SDL_Color color_white = {255, 255, 255, 255};
 
     for (int i = 0; i < MAIN_MENU_COUNT; i++) {
-        main_menu_labels[i].texture_id = load_text_texture(font, MAIN_MENU_TITLES[i], color_white, &main_menu_labels[i].width, &main_menu_labels[i].height);
+        main_menu_labels[i].texture_id = load_text_texture(font, MAIN_MENU_TITLES[i], color_white, &main_menu_labels[i].width, &main_menu_labels[i].height, 0);
     }
 
     for (int i = 0; i < PAUSE_MENU_COUNT; i++) {
-        pause_menu_labels[i].texture_id = load_text_texture(font, PAUSE_MENU_TITLES[i], color_white, &pause_menu_labels[i].width, &pause_menu_labels[i].height);
+        pause_menu_labels[i].texture_id = load_text_texture(font, PAUSE_MENU_TITLES[i], color_white, &pause_menu_labels[i].width, &pause_menu_labels[i].height, 0);
     }
 
     for (int i = 0; i < SETTINGS_MENU_COUNT; i++) {
-        settings_labels[i].texture_id = load_text_texture(font, SETTINGS_TITLES[i], color_white, &settings_labels[i].width, &settings_labels[i].height);
+        settings_labels[i].texture_id = load_text_texture(font, SETTINGS_TITLES[i], color_white, &settings_labels[i].width, &settings_labels[i].height, 0);
     }
 
     for (int i = 0; i < CONFIRM_MENU_COUNT; i++) {
-        confirm_labels[i].texture_id = load_text_texture(font, CONFIRM_TITLES[i], color_white, &confirm_labels[i].width, &confirm_labels[i].height);
+        confirm_labels[i].texture_id = load_text_texture(font, CONFIRM_TITLES[i], color_white, &confirm_labels[i].width, &confirm_labels[i].height, 0);
     }
 
     const char* help_text =
@@ -79,7 +79,7 @@ void init_user_interface(TTF_Font* font) {
         "Firework effects: Space, U, I, O, P, H, J, K, L, B, N, M\n"
     ;
 
-    help_label.texture_id = load_text_texture_wrapped(font, help_text, color_white, &help_label.width, &help_label.height, 800);
+    help_label.texture_id = load_text_texture(font, help_text, color_white, &help_label.width, &help_label.height, 800);
 }
 
 void init_ui_rendering(int width, int height) {

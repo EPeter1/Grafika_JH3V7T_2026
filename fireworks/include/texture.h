@@ -5,12 +5,17 @@
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <stdbool.h>
+
+typedef struct TextureUV {
+    float u;
+    float v;
+} TextureUV;
+
 /**
  * Load texture from file and returns with the texture name.
  */
-GLuint load_texture(char* filename);
+GLuint load_texture(const char* filename, GLint wrap_mode, bool is_mipmapped);
+GLuint load_text_texture(TTF_Font* font, const char* text, SDL_Color color, int* width, int* height, int wrap_length);
 
-GLuint load_text_texture(TTF_Font* font, const char* text, SDL_Color color, int* width, int* height);
-GLuint load_text_texture_wrapped(TTF_Font* font, const char* text, SDL_Color color, int* width, int* height, int wrap_length);
-
-#endif /* TEXTURE_H */
+#endif // TEXTURE_H

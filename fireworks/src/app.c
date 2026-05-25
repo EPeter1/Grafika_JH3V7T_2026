@@ -2,7 +2,6 @@
 
 #include "camera.h"
 #include "event.h"
-#include "fireworks.h"
 #include "gl_state.h"
 #include "scene.h"
 #include "texture.h"
@@ -97,7 +96,7 @@ void init_app(App* app, int width, int height)
     init_camera(&(app->camera));
     init_scene(&(app->scene));
 
-    app->background_texture = load_texture("assets/textures/menu_background.jpg");
+    app->background_texture = load_texture("assets/textures/menu_background.jpg", GL_CLAMP_TO_EDGE, false);
     app->current_state = STATE_MAIN_MENU;
     app->menu_selection = 0;
     app->is_confirmed = false;
@@ -191,6 +190,8 @@ void update_app(App* app)
         update_camera(&(app->camera), elapsed_time);
         update_scene(&(app->scene), elapsed_time);
     }
+
+    update_scene_settings(&app->scene);
 }
 
 void render_app(App* app)
@@ -207,7 +208,7 @@ void render_app(App* app)
     else {
         glPushMatrix();
         set_view(&(app->camera));
-        render_scene(&(app->scene));
+        render_scene(&(app->scene), &app->camera, app->uptime);
         glPopMatrix();
     }
 
