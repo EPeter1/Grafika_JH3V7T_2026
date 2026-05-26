@@ -10,6 +10,8 @@
 #include <obj/model.h>
 #include <SDL2/SDL_stdinc.h>
 
+#include <stdbool.h>
+
 static void init_settings_ubo(GLuint* settings_ubo) {
     glGenBuffers(1, settings_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, *settings_ubo);
@@ -19,8 +21,7 @@ static void init_settings_ubo(GLuint* settings_ubo) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void init_scene(Scene* scene)
-{
+void init_scene(Scene* scene) {
     scene->global_brightness = 1.0f;
     scene->particle_intensity = 1.0f;
 
@@ -47,39 +48,37 @@ void update_scene(Scene* scene, float delta_time) {
     update_water_buffers(&scene->water_renderer, scene->fireworks);
 }
 
-void render_scene(const Scene* scene, const Camera* camera, float current_time)
-{
-    set_state_depth_test(GL_TRUE);
-    set_state_depth_mask(GL_TRUE);
-    set_state_lighting(GL_TRUE);
+void render_scene(const Scene* scene, const Camera* camera, float current_time) {
+    set_gl_state_depth_test(true);
+    set_gl_state_depth_mask(true);
+    set_gl_state_lighting(true);
 
-    set_state_stencil_test(GL_TRUE);
+    set_gl_state_stencil_test(true);
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    set_state_texture_2d(GL_TRUE);
+    set_gl_state_texture_2d(true);
 
     draw_water_surface(&scene->water_renderer, camera->position, current_time);
     render_reflection(scene);
 
-    set_state_stencil_test(GL_FALSE);
-    set_state_lighting(GL_FALSE);
-    set_state_texture_2d(GL_FALSE);
-    set_state_depth_test(GL_TRUE);
-    set_state_depth_mask(GL_TRUE);
-    set_state_blend(GL_TRUE);
-    set_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    set_gl_state_stencil_test(false);
+    set_gl_state_lighting(false);
+    set_gl_state_texture_2d(false);
+    set_gl_state_depth_test(true);
+    set_gl_state_depth_mask(true);
+    set_gl_state_blend(true);
+    set_gl_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     draw_origin();
 
-    set_state_depth_mask(GL_FALSE);
-    set_state_blend_function(GL_SRC_ALPHA, GL_ONE);
+    set_gl_state_depth_mask(false);
+    set_gl_state_blend_function(GL_SRC_ALPHA, GL_ONE);
 
     render_fireworks(&scene->fire_renderer, scene->fireworks);
 }
 
-void draw_origin()
-{
+void draw_origin() {
     glBegin(GL_LINES);
 
     glColor3f(1, 0, 0);
@@ -107,12 +106,12 @@ void render_reflection(const Scene* scene) {
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glStencilMask(0x00);
 
-    set_state_lighting(GL_FALSE);
-    set_state_texture_2d(GL_FALSE);
-    set_state_blend(GL_TRUE);
-    set_state_blend_function(GL_SRC_ALPHA, GL_ONE);
-    set_state_depth_test(GL_FALSE);
-    set_state_depth_mask(GL_FALSE);
+    set_gl_state_lighting(false);
+    set_gl_state_texture_2d(false);
+    set_gl_state_blend(true);
+    set_gl_state_blend_function(GL_SRC_ALPHA, GL_ONE);
+    set_gl_state_depth_test(false);
+    set_gl_state_depth_mask(false);
 
     glPushMatrix();
         glTranslatef(0.0f, 0.0f, -2.0f);

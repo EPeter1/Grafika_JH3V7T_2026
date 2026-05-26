@@ -1,45 +1,32 @@
 #include "camera.h"
 
 #include "utils.h"
+#include "vec3.h"
 
 #include <GL/glew.h>
 #include <GL/glu.h>
 
 #include <math.h>
 
-void init_camera(Camera* camera)
-{
-    camera->position.x = 2.0;
-    camera->position.y = 2.0;
-    camera->position.z = 2.0;
-
-    camera->rotation.x = 0.0;
-    camera->rotation.y = 0.0;
-    camera->rotation.z = 0.0;
-
-    camera->speed.x = 0.0;
-    camera->speed.y = 0.0;
-    camera->speed.z = 0.0;
+void init_camera(Camera* camera) {
+    camera->position = (vec3){2.0f, 2.0f, 2.0f};
+    camera->rotation = (vec3){-35.0f, 0.0f, 225.0f};
+    camera->speed = (vec3){0.0f, 0.0f, 0.0f};
 }
 
-void update_camera(Camera* camera, double time)
-{
-    double angle;
-    double side_angle;
+void update_camera(Camera* camera, double delta_time) {
+    double angle = degree_to_radian(camera->rotation.z);
+    double side_angle = degree_to_radian(camera->rotation.z + 90.0);
 
-    angle = degree_to_radian(camera->rotation.z);
-    side_angle = degree_to_radian(camera->rotation.z + 90.0);
+    camera->position.x += cos(angle) * camera->speed.y * delta_time;
+    camera->position.y += sin(angle) * camera->speed.y * delta_time;
+    camera->position.x += cos(side_angle) * camera->speed.x * delta_time;
+    camera->position.y += sin(side_angle) * camera->speed.x * delta_time;
 
-    camera->position.x += cos(angle) * camera->speed.y * time;
-    camera->position.y += sin(angle) * camera->speed.y * time;
-    camera->position.x += cos(side_angle) * camera->speed.x * time;
-    camera->position.y += sin(side_angle) * camera->speed.x * time;
-
-    camera->position.z += camera->speed.z * time;
+    camera->position.z += camera->speed.z * delta_time;
 }
 
-void set_view(const Camera* camera)
-{
+void set_view(const Camera* camera) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -56,11 +43,10 @@ void set_view(const Camera* camera)
 
     gluLookAt(eye_x, eye_y, eye_z,
         center_x, center_y, center_z,
-        0, 0, 1);
+        0.0, 0.0, 1.0);
 }
 
-void rotate_camera(Camera* camera, double horizontal, double vertical)
-{
+void rotate_camera(Camera* camera, double horizontal, double vertical) {
     camera->rotation.z += horizontal;
     camera->rotation.x += vertical;
 
@@ -81,18 +67,15 @@ void rotate_camera(Camera* camera, double horizontal, double vertical)
     }
 }
 
-void set_camera_speed(Camera* camera, double speed)
-{
+void set_camera_speed(Camera* camera, double speed) {
     camera->speed.y = speed;
 }
 
-void set_camera_side_speed(Camera* camera, double speed)
-{
+void set_camera_side_speed(Camera* camera, double speed) {
     camera->speed.x = speed;
 }
 
-void set_camera_vertical_speed(Camera* camera, double speed)
-{
+void set_camera_vertical_speed(Camera* camera, double speed) {
     camera->speed.z = speed;
 }
 

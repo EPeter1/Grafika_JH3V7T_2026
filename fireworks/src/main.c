@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     App* app = (App*)malloc(sizeof(App));
 
     if (app == NULL) {
-        printf("[ERROR] Application memory allocation failed!\n");
+        fprintf(stderr, "[ERROR] Application memory allocation failed!\n");
         return 1;
     }
 

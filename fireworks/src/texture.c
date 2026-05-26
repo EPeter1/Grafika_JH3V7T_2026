@@ -1,7 +1,6 @@
 #include "texture.h"
 
 #include <GL/glew.h>
-#include <SDL2/SDL_endian.h>
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
@@ -14,20 +13,10 @@
 #include <stdlib.h>
 
 GLuint load_texture(const char* filename, GLint wrap_mode, bool is_mipmapped) {
-    SDL_Surface* temp_surface = IMG_Load(filename);
-    if (temp_surface == NULL) {
-        fprintf(stderr, "[ERROR] Failed to load image %s: %s\n", filename, IMG_GetError());
-        exit(1);
-    }
-
-    bool has_alpha = (temp_surface->format->BytesPerPixel == 4);
-    Uint32 pixel_format = has_alpha ? SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24;
-
-    SDL_Surface* surface = SDL_ConvertSurfaceFormat(temp_surface, pixel_format, 0);
-    SDL_FreeSurface(temp_surface);
+    SDL_Surface* surface = load_surface(filename);
 
     if (surface == NULL) {
-        fprintf(stderr, "[ERROR] Failed to convert surface: %s\n", SDL_GetError());
+        fprintf(stderr, "[ERROR] Failed to load image '%s': %s\n", filename, IMG_GetError());
         exit(1);
     }
 
@@ -35,6 +24,7 @@ GLuint load_texture(const char* filename, GLint wrap_mode, bool is_mipmapped) {
     glGenTextures(1, &texture_name);
     glBindTexture(GL_TEXTURE_2D, texture_name);
 
+    bool has_alpha = (surface->format->BytesPerPixel == 4);
     GLint internal_format = has_alpha ? GL_RGBA : GL_RGB;
     GLenum format = has_alpha ? GL_RGBA : GL_RGB;
 
@@ -101,4 +91,24 @@ GLuint load_text_texture(TTF_Font* font, const char* text, SDL_Color color, int*
 
     SDL_FreeSurface(surface);
     return texture_name;
+}
+
+SDL_Surface* load_surface(const char* filename) {
+    SDL_Surface* temp_surface = IMG_Load(filename);
+
+    if (temp_surface == NULL) {
+        return NULL;
+    }
+
+    bool has_alpha = (temp_surface->format->BytesPerPixel == 4);
+    Uint32 pixel_format = has_alpha ? SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24;
+
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(temp_surface, pixel_format, 0);
+    SDL_FreeSurface(temp_surface);
+
+    if (surface == NULL) {
+        return NULL;
+    }
+
+    return surface;
 }

@@ -6,8 +6,7 @@
 /**
  * GLSL-like three dimensional vector
  */
-typedef struct vec3 
-{
+typedef struct vec3 {
     float x;
     float y;
     float z;

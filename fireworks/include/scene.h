@@ -42,4 +42,4 @@ void update_scene_settings(Scene* scene);
 void render_reflection(const Scene* scene);
 void destroy_scene(Scene* scene);
 
-#endif /* SCENE_H */
+#endif // SCENE_H

@@ -14,6 +14,7 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
@@ -21,16 +22,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-void init_app(App* app, int width, int height)
-{
-    int error_code;
-    int inited_loaders;
-
+void init_app(App* app, int width, int height) {
     app->is_running = false;
 
-    error_code = SDL_Init(SDL_INIT_EVERYTHING);
+    int error_code = SDL_Init(SDL_INIT_EVERYTHING);
     if (error_code != 0) {
-        printf("[ERROR] SDL initialization error: %s\n", SDL_GetError());
+        fprintf(stderr, "[ERROR] SDL initialization error: %s\n", SDL_GetError());
         return;
     }
 
@@ -41,50 +38,61 @@ void init_app(App* app, int width, int height)
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     app->window = SDL_CreateWindow(
-        "Fireworks!",
+        "Fireworks",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         width, height,
         SDL_WINDOW_OPENGL);
     if (app->window == NULL) {
-        printf("[ERROR] Unable to create the application window!\n");
+        fprintf(stderr, "[ERROR] Unable to create the application window!\n");
         return;
     }
 
-    inited_loaders = IMG_Init(IMG_INIT_PNG);
-    if (inited_loaders == 0) {
-        printf("[ERROR] IMG initialization error: %s\n", IMG_GetError());
+    error_code = IMG_Init(IMG_INIT_PNG);
+    if (error_code == 0) {
+        fprintf(stderr, "[ERROR] IMG initialization error: %s\n", IMG_GetError());
         return;
     }
 
-    inited_loaders = TTF_Init();
-    if (inited_loaders == -1) {
-        printf("[ERROR] TTF initialization error: %s\n", TTF_GetError());
+    const char* file_path = "assets/textures/logo.png";
+    SDL_Surface* logo = load_surface(file_path);
+
+    if (logo == NULL) {
+        fprintf(stderr, "[ERROR] Failed to load image '%s': %s\n", file_path, IMG_GetError());
+    }
+    else {
+        SDL_SetWindowIcon(app->window, logo);
+        SDL_FreeSurface(logo);
+    }
+
+    error_code = TTF_Init();
+    if (error_code == -1) {
+        fprintf(stderr, "[ERROR] TTF initialization error: %s\n", TTF_GetError());
         return;
     }
 
     app->gl_context = SDL_GL_CreateContext(app->window);
     if (app->gl_context == NULL) {
-        printf("[ERROR] Unable to create the OpenGL context!\n");
+        fprintf(stderr, "[ERROR] Unable to create the OpenGL context!\n");
         return;
     }
 
     glewExperimental = GL_TRUE;
     GLenum error = glewInit();
 
-    if (GLEW_OK != error) {
-        printf("[ERROR] GLEW initialization error: %s\n", glewGetErrorString(error));
+    if (error != GLEW_OK) {
+        fprintf(stderr, "[ERROR] GLEW initialization error: %s\n", glewGetErrorString(error));
         return;
     }
 
-    char* font_path = "assets/fonts/Orbitron-Regular.ttf";
-    TTF_Font* font = TTF_OpenFont(font_path, 24);
+    file_path = "assets/fonts/Orbitron-Regular.ttf";
+    TTF_Font* font = TTF_OpenFont(file_path, 24);
 
     if (font) {
         init_user_interface(font);
         TTF_CloseFont(font);
     }
     else {
-        printf("[ERROR] Failed to load font %s: %s\n", font_path, TTF_GetError());
+        fprintf(stderr, "[ERROR] Failed to load font '%s': %s\n", file_path, TTF_GetError());
         return;
     }
 
@@ -93,8 +101,8 @@ void init_app(App* app, int width, int height)
     init_opengl();
     reshape(width, height);
 
-    init_camera(&(app->camera));
-    init_scene(&(app->scene));
+    init_camera(&app->camera);
+    init_scene(&app->scene);
 
     app->background_texture = load_texture("assets/textures/menu_background.jpg", GL_CLAMP_TO_EDGE, false);
     app->current_state = STATE_MAIN_MENU;
@@ -106,34 +114,30 @@ void init_app(App* app, int width, int height)
     app->is_running = true;
 }
 
-void init_opengl()
-{
+void init_opengl() {
     glShadeModel(GL_SMOOTH);
-
     glEnable(GL_NORMALIZE);
     glEnable(GL_AUTO_NORMAL);
+    glEnable(GL_PROGRAM_POINT_SIZE);
 
-    glClearColor(0.1, 0.1, 0.1, 1.0);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    set_state_depth_test(GL_TRUE);
+    set_gl_state_depth_test(true);
     glClearDepth(1.0);
 
-    set_state_texture_2d(GL_TRUE);
+    set_gl_state_texture_2d(true);
 
-    set_state_lighting(GL_TRUE);
+    set_gl_state_lighting(true);
     glEnable(GL_LIGHT0);
 
-    set_state_blend(GL_TRUE);
-    set_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glEnable(GL_PROGRAM_POINT_SIZE);
+    set_gl_state_blend(true);
+    set_gl_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void reshape(GLsizei width, GLsizei height)
-{
+void reshape(GLsizei width, GLsizei height) {
     double aspect_ratio = (double)width / height;
 
     glViewport(0, 0, width, height);
@@ -144,8 +148,7 @@ void reshape(GLsizei width, GLsizei height)
     glMatrixMode(GL_MODELVIEW);
 }
 
-void handle_app_events(App* app)
-{
+void handle_app_events(App* app) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -165,7 +168,7 @@ void handle_app_events(App* app)
             case STATE_SETTINGS:
                 handle_settings_events(app, &event);
                 break;
-            
+
             case STATE_PAUSED:
                 handle_menu_events(app, &event, PAUSE_MENU_COUNT, 250, get_pause_menu_label_size);
                 break;
@@ -173,32 +176,27 @@ void handle_app_events(App* app)
     }
 }
 
-void update_app(App* app)
-{
-    double current_time;
-    double elapsed_time;
-
-    current_time = (double)SDL_GetTicks() / 1000.0;
-    elapsed_time = current_time - app->uptime;
+void update_app(App* app) {
+    double current_time = (double)SDL_GetTicks() / 1000.0;
+    double delta_time = current_time - app->uptime;
     app->uptime = current_time;
 
     if (app->current_state == STATE_SIMULATION) {
-        if (elapsed_time > 0.05) {
-            elapsed_time = 0.05;
+        if (delta_time > 0.05) {
+            delta_time = 0.05;
         }
 
-        update_camera(&(app->camera), elapsed_time);
-        update_scene(&(app->scene), elapsed_time);
+        update_camera(&app->camera, delta_time);
+        update_scene(&app->scene, delta_time);
     }
 
     update_scene_settings(&app->scene);
 }
 
-void render_app(App* app)
-{
-    set_state_depth_mask(GL_TRUE); 
+void render_app(App* app) {
+    set_gl_state_depth_mask(true);
     glStencilMask(0xFF);
-    
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     if (app->current_state == STATE_MAIN_MENU || 
@@ -207,8 +205,8 @@ void render_app(App* app)
     }
     else {
         glPushMatrix();
-        set_view(&(app->camera));
-        render_scene(&(app->scene), &app->camera, app->uptime);
+        set_view(&app->camera);
+        render_scene(&app->scene, &app->camera, app->uptime);
         glPopMatrix();
     }
 
@@ -239,8 +237,7 @@ void render_app(App* app)
     SDL_GL_SwapWindow(app->window);
 }
 
-void destroy_app(App* app)
-{
+void destroy_app(App* app) {
     destroy_scene(&app->scene);
     destroy_user_interface();
 

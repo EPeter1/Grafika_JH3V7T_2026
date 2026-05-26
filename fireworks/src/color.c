@@ -16,7 +16,7 @@ static const Color color_palette[COLOR_COUNT] = {
 
 Color get_color(ColorName name) {
     if (name >= COLOR_COUNT) {
-        printf("[ERROR] COLOR_COUNT is invalid!");
+        fprintf(stderr, "[ERROR] COLOR_COUNT is invalid!");
         exit(1);
     }
 

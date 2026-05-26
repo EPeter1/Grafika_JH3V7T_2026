@@ -85,22 +85,22 @@ void init_user_interface(TTF_Font* font) {
 void init_ui_rendering(int width, int height) {
     set_orthogonal_view(width, height);
 
-    set_state_lighting(GL_FALSE);
-    set_state_depth_test(GL_FALSE);
-    set_state_texture_2d(GL_TRUE);
-    set_state_blend(GL_TRUE);
-    set_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    set_gl_state_lighting(false);
+    set_gl_state_depth_test(false);
+    set_gl_state_texture_2d(true);
+    set_gl_state_blend(true);
+    set_gl_state_blend_function(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void draw_rectangle(GLuint texture_id, int x, int y, int width, int height, Color color) {
     glColor4f(color.red, color.green, color.blue, color.alpha);
 
     if (texture_id != 0) {
-        set_state_texture_2d(GL_TRUE);
+        set_gl_state_texture_2d(true);
         glBindTexture(GL_TEXTURE_2D, texture_id);
     }
     else {
-        set_state_texture_2d(GL_FALSE);
+        set_gl_state_texture_2d(false);
     }
 
     glBegin(GL_QUADS);
@@ -172,7 +172,7 @@ void render_settings(int selection, float brightness, float intensity) {
         int bar_x = width / 2 + 50;
         int bar_y = text_y + 5;
 
-        set_state_texture_2d(GL_FALSE);
+        set_gl_state_texture_2d(false);
         glColor3f(0.3f, 0.3f, 0.3f);
         glBegin(GL_LINE_LOOP);
             glVertex2f(bar_x, bar_y);
@@ -180,7 +180,7 @@ void render_settings(int selection, float brightness, float intensity) {
             glVertex2f(bar_x + bar_width, bar_y + bar_height);
             glVertex2f(bar_x, bar_y + bar_height);
         glEnd();
-        set_state_texture_2d(GL_TRUE);
+        set_gl_state_texture_2d(true);
 
         int fill_width = (int)(bar_width * values[i]);
         Color bar_color = (i == selection) ? COLOR_HIGHLIGHT : (Color){0.7f, 0.7f, 0.0f, 1.0f};

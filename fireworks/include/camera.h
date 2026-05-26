@@ -6,8 +6,7 @@
 /**
  * Camera, as a moving point with direction
  */
-typedef struct Camera
-{
+typedef struct Camera {
     vec3 position;
     vec3 rotation;
     vec3 speed;
@@ -21,7 +20,7 @@ void init_camera(Camera* camera);
 /**
  * Update the position of the camera.
  */
-void update_camera(Camera* camera, double time);
+void update_camera(Camera* camera, double delta_time);
 
 /**
  * Apply the camera settings to the view transformation.
@@ -47,4 +46,4 @@ void set_camera_vertical_speed(Camera* camera, double speed);
 void set_orthogonal_view(int width, int height);
 void restore_perspective_view();
 
-#endif /* CAMERA_H */
+#endif // CAMERA_H

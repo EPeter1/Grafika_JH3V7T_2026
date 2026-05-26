@@ -47,8 +47,6 @@ void apply_pattern_behavior(Firework* firework, Spark* spark, const PhysicsConfi
 void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* color, float* size);
 void handle_ghost_logic(const Firework* firework, const Spark* spark, Color* color, float* size);
 void update_spark_trail(Spark* spark, Trail* trails, float delta_time);
-void draw_spark_trail(const Spark* spark, Color color);
-void draw_spark_head(vec3 position, Color color, float size);
 bool should_spark_render(const Firework* firework, const Spark* spark);
 
 #endif // SPARK_H

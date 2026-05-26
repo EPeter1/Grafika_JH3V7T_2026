@@ -14,23 +14,23 @@
 #include <stdlib.h>
 
 static const PhysicsConfig pattern_configs[PATTERN_COUNT] = {
+    [PATTERN_CHRYSANTHEMUM] = {.drag = 0.95f, .gravity = 0.15f, .spark_count = 300, .alpha_exponent = 2.0f},
     [PATTERN_COMET] = {.drag = 0.05f, .gravity = 0.1f, .spark_count = 100, .alpha_exponent = 0.5f},
     [PATTERN_CROSSETTE] = {.drag = 0.8f, .gravity = 0.1f, .spark_count = 20, .alpha_exponent = 0.5f},
+    [PATTERN_FISH] = {.drag = 2.0f, .gravity = 0.05f, .spark_count = 20, .alpha_exponent = 2.0f},
+    [PATTERN_GHOST] = {.drag = 1.0f, .gravity = 0.05f, .spark_count = 300, .alpha_exponent = 2.0f},
+    [PATTERN_NISHIKI_KAMURO] = {.drag = 1.0f, .gravity = 0.05f, .spark_count = 500, .alpha_exponent = 0.5f},
+    [PATTERN_PALM] = {.drag = 0.10f, .gravity = 0.15f, .spark_count = 40, .alpha_exponent = 1.0f},
     [PATTERN_PEONY] = {.drag = 1.0f, .gravity = 0.1f, .spark_count = 300, .alpha_exponent = 2.0f},
     [PATTERN_RING] = {.drag = 0.5f, .gravity = 0.2f, .spark_count = 300, .alpha_exponent = 1.0f},
-    [PATTERN_WILLOW] = {.drag = 2.0f, .gravity = 0.15f, .spark_count = 300, .alpha_exponent = 0.5f},
-    [PATTERN_PALM] = {.drag = 0.10f, .gravity = 0.15f, .spark_count = 40, .alpha_exponent = 1.0f},
-    [PATTERN_FISH] = {.drag = 2.0f, .gravity = 0.05f, .spark_count = 20, .alpha_exponent = 2.0f},
     [PATTERN_STROBE] = {.drag = 0.4f, .gravity = 0.05f, .spark_count = 300, .alpha_exponent = 1.0f},
-    [PATTERN_GHOST] = {.drag = 1.0f, .gravity = 0.05f, .spark_count = 300, .alpha_exponent = 2.0f},
     [PATTERN_TOURBILLION] = {.drag = 2.0f, .gravity = 0.1f, .spark_count = 10, .alpha_exponent = 1.0f},
-    [PATTERN_NISHIKI_KAMURO] = {.drag = 1.0f, .gravity = 0.05f, .spark_count = 500, .alpha_exponent = 0.5f},
-    [PATTERN_CHRYSANTHEMUM] = {.drag = 0.95f, .gravity = 0.15f, .spark_count = 300, .alpha_exponent = 2.0f}
+    [PATTERN_WILLOW] = {.drag = 2.0f, .gravity = 0.15f, .spark_count = 300, .alpha_exponent = 0.5f}
 };
 
 PhysicsConfig get_physics_config(FireworkPattern pattern) {
     if (pattern >= PATTERN_COUNT) {
-        printf("[ERROR] PATTERN_COUNT is invalid!");
+        fprintf(stderr, "[ERROR] PATTERN_COUNT is invalid!");
         exit(1);
     }
 

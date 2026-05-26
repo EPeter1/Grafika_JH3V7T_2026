@@ -157,7 +157,7 @@ void draw_spark_heads(const FireworkRenderer* renderer) {
     }
     glUseProgram(renderer->spark_shader);
 
-    set_state_texture_2d(GL_TRUE);
+    set_gl_state_texture_2d(true);
     glBindTexture(GL_TEXTURE_2D, renderer->spark_texture);
 
     glEnable(GL_POINT_SPRITE);
@@ -175,7 +175,7 @@ void draw_spark_trails(const FireworkRenderer* renderer) {
     }
     glUseProgram(renderer->trail_shader);
 
-    set_state_texture_2d(GL_FALSE);
+    set_gl_state_texture_2d(false);
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(PRIMITIVE_RESTART_INDEX);
 
