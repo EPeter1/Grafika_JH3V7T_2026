@@ -28,10 +28,10 @@ typedef struct Firework {
 } Firework;
 
 void init_fireworks(Firework* fireworks);
-void launch_firework(Firework* fireworks, FireworkPattern pattern);
-void launch_mini_explosion(Firework* fireworks, vec3 position, Color color, FireworkPattern pattern, int current_generation);
-void update_rising_fireworks(Firework* fireworks, float delta_time);
-void update_exploded_fireworks(Firework* fireworks, float delta_time);
+void launch_firework(Firework* fireworks, FireworkPattern pattern, vec3 camera_position);
+void launch_mini_explosion(Firework* fireworks, FireworkPattern pattern, vec3 camera_position, vec3 firework_position, Color color, int current_generation);
+void update_rising_fireworks(Firework* fireworks, vec3 camera_position, float delta_time);
+void update_exploded_fireworks(Firework* fireworks, vec3 camera_position, float delta_time);
 void draw_spark_heads(const FireworkRenderer* renderer);
 void draw_spark_trails(const FireworkRenderer* renderer);
 void draw_rising_fireworks(const Firework* fireworks);

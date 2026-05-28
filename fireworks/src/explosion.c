@@ -90,30 +90,27 @@ void explode_chrysanthemum(Firework* firework, Spark* spark) {
 
 void explode_comet(Firework* firework, Spark* spark) {
     int index = get_spark_index(firework, spark);
-    int branch_count = 8;
-    int branch_id = index % branch_count;
+    int branch_count = get_physics_config(firework->pattern).spark_count;
 
-    int sparks_per_branch = get_physics_config(firework->pattern).spark_count / branch_count;
-    spark->is_leader = (index % sparks_per_branch == 0);
+    spark->is_leader = true;
 
-    float angle = (float)branch_id * (2.0f * M_PI / (float)branch_count);   
-    float spread = 0.5f;
+    float ratio = (float)index / (float)branch_count;
+    float phi = ratio * (M_PI / 4.0f);
+    float theta = 2.0f * M_PI * ratio;
 
-    vec3 branch_direction = {
-        cosf(angle) * spread,
-        sinf(angle) * spread,
-        1.0f
+    vec3 branch_axis = {
+        sinf(phi) * cosf(theta),
+        sinf(phi) * sinf(theta),
+        cosf(phi)
     };
 
-    vec3 direction = get_cone_direction(branch_direction, 0.02f);
+    vec3 direction = get_cone_direction(branch_axis, 0.5f);
 
-    float speed = rand_range(0.6f, 1.0f);
-    spark->speed = scale_vec3(add_vec3(firework->speed, direction), speed);
+    float speed = rand_range(0.8f, 1.3f);
+    spark->speed = scale_vec3(direction, speed);
 
     firework->trails[index].length = MAX_HISTORY;
-
-    float life = spark->is_leader ? 2.0f : rand_range(1.0f, 1.5f);
-    set_spark_life(spark, life);
+    set_spark_life(spark, rand_range(2.0f, 3.0f));
 }
 
 void explode_crossette(Firework* firework, Spark* spark) {
@@ -123,9 +120,9 @@ void explode_crossette(Firework* firework, Spark* spark) {
 
     vec3 v1 = get_spherical_direction();
 
-    vec3 temp = {0, 1, 0};
+    vec3 temp = {0.0f, 1.0f, 0.0f};
     if (fabsf(v1.y) > 0.9f) {
-        temp = (vec3){1, 0, 0};
+        temp = (vec3){1.0f, 0.0f, 0.0f};
     }
 
     vec3 v2 = normalize_vec3(cross_vec3(v1, temp));
@@ -133,9 +130,9 @@ void explode_crossette(Firework* firework, Spark* spark) {
 
     vec3 directions[14];
 
-    directions[0] = v1;  directions[1] = scale_vec3(v1, -1.0f);
-    directions[2] = v2;  directions[3] = scale_vec3(v2, -1.0f);
-    directions[4] = v3;  directions[5] = scale_vec3(v3, -1.0f);
+    directions[0] = v1; directions[1] = scale_vec3(v1, -1.0f);
+    directions[2] = v2; directions[3] = scale_vec3(v2, -1.0f);
+    directions[4] = v3; directions[5] = scale_vec3(v3, -1.0f);
 
     directions[6]  = normalize_vec3(add_vec3(add_vec3(v1, v2), v3));
     directions[7]  = normalize_vec3(add_vec3(add_vec3(v1, v2), scale_vec3(v3, -1.0f)));
@@ -216,8 +213,8 @@ void explode_palm(Firework* firework, Spark* spark) {
     int branch_count = 12; 
     int branch_id = index % branch_count;
 
-    float random_seed = sinf(firework->position.x * 12.9898f + firework->position.y * 78.233f) * 43758.5453f;
-    float offset = random_seed - floorf(random_seed);
+    float seed = sinf(firework->position.x * 12.9898f + firework->position.y * 78.233f) * 43758.5453f;
+    float offset = seed - floorf(seed);
     float angle_offset = offset * 2.0f * M_PI;
 
     float ratio = (float)branch_id / (float)branch_count;
@@ -256,6 +253,11 @@ void explode_peony(Firework* firework, Spark* spark) {
 
 void explode_ring(Firework* firework, Spark* spark) {
     int index = get_spark_index(firework, spark);
+    float seed = sinf(firework->position.x * 12.9898f + firework->position.y * 78.233f) * 43758.5453f;
+
+    int color_seed = abs((int)seed);
+    Color center_color = get_color((ColorName)(color_seed % COLOR_COUNT));
+    Color edge_color = get_color((ColorName)((color_seed + 3) % COLOR_COUNT));
 
     if (index % 3 == 0) {
         vec3 direction = get_spherical_direction();
@@ -263,29 +265,49 @@ void explode_ring(Firework* firework, Spark* spark) {
         float speed = rand_range(0.01f, 0.2f);
         spark->speed = scale_vec3(direction, speed);
 
+        spark->color = center_color;
         set_spark_life(spark, rand_range(0.8f, 1.2f));
 
         firework->trails[index].length = 2;
         spark->is_leader = false;
     }
     else {
+        float offset = seed - floorf(seed);
+        float n1 = offset;
+        float n2 = 0.5f * (sinf(seed) + 1.0f);
+
+        float phi_plane = acosf(2.0f * n1 - 1.0f);
+        float theta_plane = 2.0f * M_PI * n2;
+
+        vec3 normal = {
+            sinf(phi_plane) * cosf(theta_plane),
+            sinf(phi_plane) * sinf(theta_plane),
+            cosf(phi_plane)
+        };
+
+        vec3 temp = {0.0f, 1.0f, 0.0f};
+        if (fabsf(normal.y) > 0.9f) {
+            temp = (vec3){1.0f, 0.0f, 0.0f};
+        }
+
+        vec3 v1 = normalize_vec3(cross_vec3(normal, temp));
+        vec3 v2 = cross_vec3(normal, v1);
         float angle = rand_range(0.0f, 2.0f * M_PI);
 
-        vec3 direction = {
-            cosf(angle),
-            sinf(angle),
-            0.0f
-        };
+        vec3 direction = add_vec3(
+            scale_vec3(v1, cosf(angle)),
+            scale_vec3(v2, sinf(angle))
+        );
 
         direction.x += rand_symmetric(0.02f);
         direction.y += rand_symmetric(0.02f);
         direction.z += rand_symmetric(0.05f);
-
         direction = normalize_vec3(direction);
 
         float speed = 0.5f; 
         spark->speed = scale_vec3(direction, speed);
 
+        spark->color = edge_color;
         set_spark_life(spark, 2.0f);
 
         firework->trails[index].length = 10;

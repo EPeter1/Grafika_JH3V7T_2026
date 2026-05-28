@@ -9,6 +9,10 @@ double degree_to_radian(double degree) {
     return degree * M_PI / 180.0;
 }
 
+double radian_to_degree(double radian) {
+    return radian * 180.0 / M_PI;
+}
+
 vec3 get_spherical_direction() {
     float z = rand_range(-1.0f, 1.0f);
     float phi = rand_range(0.0f, 2.0f * M_PI);

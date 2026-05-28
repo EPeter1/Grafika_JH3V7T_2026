@@ -4,15 +4,22 @@
 #include "camera.h"
 #include "firework_renderer.h"
 #include "fireworks.h"
+#include "vec3.h"
 #include "water.h"
 
 #include <obj/model.h>
 
-typedef struct Scene {
-    Model model;
-    GLuint settings_ubo;
+typedef struct Settings {
     float global_brightness;
     float particle_intensity;
+    float sound_volume;
+} Settings;
+
+typedef struct Scene {
+    Model model;
+    Settings settings;
+    GLuint settings_ubo;
+
     Firework fireworks[MAX_FIREWORKS];
     FireworkRenderer fire_renderer;
     WaterRenderer water_renderer;
@@ -26,7 +33,7 @@ void init_scene(Scene* scene);
 /**
  * Update the scene.
  */
-void update_scene(Scene* scene, float delta_time);
+void update_scene(Scene* scene, vec3 camera_position, float delta_time);
 
 /**
  * Render the scene objects.

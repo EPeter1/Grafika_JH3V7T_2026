@@ -1,5 +1,6 @@
 #include "fireworks.h"
 
+#include "audio.h"
 #include "color.h"
 #include "explosion.h"
 #include "firework_pattern.h"
@@ -20,7 +21,7 @@ void init_fireworks(Firework* fireworks) {
     }
 }
 
-void launch_firework(Firework* fireworks, FireworkPattern pattern) {
+void launch_firework(Firework* fireworks, FireworkPattern pattern, vec3 camera_position) {
     for (int i = 0; i < MAX_FIREWORKS; i++) {
         Firework* firework = &fireworks[i];
 
@@ -38,12 +39,17 @@ void launch_firework(Firework* fireworks, FireworkPattern pattern) {
                 rand_range(0.6f, 0.9f)
             );
 
+            if (rand_range(0.0f, 1.0f) <= 0.5f) {
+                SoundType launch_sound = (rand() % 2 == 0) ? SOUND_BANG : SOUND_WHISTLE;
+                play_firework_sound(launch_sound, firework->position, camera_position);
+            }
+
             break;
         }
     }
 }
 
-void launch_mini_explosion(Firework* fireworks, vec3 position, Color color, FireworkPattern pattern, int current_generation) {
+void launch_mini_explosion(Firework* fireworks, FireworkPattern pattern, vec3 camera_position, vec3 firework_position, Color color, int current_generation) {
     if (current_generation >= 1) {
         return; 
     }
@@ -55,17 +61,18 @@ void launch_mini_explosion(Firework* fireworks, vec3 position, Color color, Fire
 
             mini->state = FIREWORK_EXPLODED;
             mini->pattern = pattern;
-            mini->position = position;
+            mini->position = firework_position;
             mini->generation = current_generation + 1;
 
             init_explosion(mini, 15, color);
-            
+            play_firework_sound(SOUND_FIZZLE, mini->position, camera_position);
+
             break;
         }
     }
 }
 
-void update_rising_fireworks(Firework* fireworks, float delta_time) {
+void update_rising_fireworks(Firework* fireworks, vec3 camera_position, float delta_time) {
     for (int i = 0; i < MAX_FIREWORKS; i++) {
         Firework* firework = &fireworks[i];
 
@@ -82,11 +89,13 @@ void update_rising_fireworks(Firework* fireworks, float delta_time) {
 
             init_explosion(firework, spark_count, random_color);
             firework->state = FIREWORK_EXPLODED;
+
+            play_firework_sound(SOUND_BANG, firework->position, camera_position);
         }
     }
 }
 
-void update_exploded_fireworks(Firework* fireworks, float delta_time) {
+void update_exploded_fireworks(Firework* fireworks, vec3 camera_position, float delta_time) {
     for (int i = 0; i < MAX_FIREWORKS; i++) {
         Firework* firework = &fireworks[i];
 
@@ -110,7 +119,7 @@ void update_exploded_fireworks(Firework* fireworks, float delta_time) {
             update_spark_trail(spark, firework->trails, delta_time);
 
             if (firework->pattern == PATTERN_CROSSETTE && get_spark_progress(spark) > 0.9f) {
-                launch_mini_explosion(fireworks, spark->position, spark->color, PATTERN_CROSSETTE, firework->generation);
+                launch_mini_explosion(fireworks, PATTERN_CROSSETTE, camera_position, spark->position, spark->color, firework->generation);
                 spark->current_life = 0.0f;
 
                 continue;
@@ -140,7 +149,7 @@ void update_exploded_fireworks(Firework* fireworks, float delta_time) {
                         rand_symmetric(0.4f)
                     };
 
-                    launch_mini_explosion(fireworks, add_vec3(firework->position, offset), parent_color, PATTERN_PEONY, firework->generation);
+                    launch_mini_explosion(fireworks, PATTERN_PEONY, camera_position, add_vec3(firework->position, offset), parent_color, firework->generation);
                 }
             }
         }

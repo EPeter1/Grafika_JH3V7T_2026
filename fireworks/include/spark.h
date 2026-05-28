@@ -46,6 +46,7 @@ void apply_spark_physics(Spark* spark, const PhysicsConfig config, float delta_t
 void apply_pattern_behavior(Firework* firework, Spark* spark, const PhysicsConfig config, float delta_time);
 void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* color, float* size);
 void handle_ghost_logic(const Firework* firework, const Spark* spark, Color* color, float* size);
+void handle_strobe_logic(const Firework* firework, const Spark* spark, Color* color, float* size);
 void update_spark_trail(Spark* spark, Trail* trails, float delta_time);
 bool should_spark_render(const Firework* firework, const Spark* spark);
 

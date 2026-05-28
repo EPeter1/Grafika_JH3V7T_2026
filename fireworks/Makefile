@@ -10,6 +10,7 @@ LDFLAGS = \
 	-lglew32 \
 	-lmingw32 \
 	-lSDL2_image \
+	-lSDL2_mixer \
 	-lSDL2_ttf \
 	-lSDL2main \
 	-lSDL2 \
@@ -26,6 +27,7 @@ WFLAGS = \
 
 SRC = \
 	src/app.c \
+	src/audio.c \
 	src/camera.c \
 	src/color.c \
 	src/event.c \

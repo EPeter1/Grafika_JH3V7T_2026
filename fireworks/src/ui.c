@@ -15,7 +15,7 @@
 
 static const char* MAIN_MENU_TITLES[] = {"Start Simulation", "Settings", "Help", "Exit"};
 static const char* PAUSE_MENU_TITLES[] = {"Resume", "Settings", "Help", "Exit to Menu", "Exit Application"};
-static const char* SETTINGS_TITLES[] = {"Global Brightness", "Particle Intensity"};
+static const char* SETTINGS_TITLES[] = {"Global Brightness", "Particle Intensity", "Sound Volume"};
 static const char* CONFIRM_TITLES[] = {"Are you sure?", "Yes", "No"};
 
 static Label main_menu_labels[MAIN_MENU_COUNT];
@@ -150,14 +150,12 @@ void render_menu(Label* labels, int item_count, int selection, bool is_confirmed
     restore_perspective_view();
 }
 
-void render_settings(int selection, float brightness, float intensity) {
+void render_settings(int selection, const float* settings) {
     int width;
     int height;
     SDL_GL_GetDrawableSize(SDL_GL_GetCurrentWindow(), &width, &height);
 
     init_ui_rendering(width, height);
-
-    float values[2] = { brightness, intensity };
 
     for (int i = 0; i < SETTINGS_MENU_COUNT; i++) {
         Color item_color = (i == selection) ? COLOR_HIGHLIGHT : COLOR_NO_HIGHLIGHT;
@@ -182,7 +180,7 @@ void render_settings(int selection, float brightness, float intensity) {
         glEnd();
         set_gl_state_texture_2d(true);
 
-        int fill_width = (int)(bar_width * values[i]);
+        int fill_width = (int)(bar_width * settings[i]);
         Color bar_color = (i == selection) ? COLOR_HIGHLIGHT : (Color){0.7f, 0.7f, 0.0f, 1.0f};
 
         draw_rectangle(0, bar_x, bar_y, fill_width, bar_height, bar_color);

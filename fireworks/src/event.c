@@ -1,13 +1,16 @@
 #include "event.h"
 
 #include "app.h"
+#include "audio.h"
 #include "camera.h"
 #include "firework_pattern.h"
 #include "fireworks.h"
 #include "ui.h"
 #include "utils.h"
+#include "vec3.h"
 
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
@@ -77,7 +80,9 @@ void handle_menu_events(App* app, SDL_Event* event, int item_count, int start_y,
             case SDL_SCANCODE_ESCAPE:
                 if (app->current_state == STATE_PAUSED) {
                     app->current_state = STATE_SIMULATION;
+
                     SDL_SetRelativeMouseMode(SDL_TRUE);
+                    Mix_Resume(-1);
                 }
                 break;
 
@@ -112,20 +117,28 @@ void handle_settings_events(App* app, SDL_Event* event) {
             case SDL_SCANCODE_A:
             case SDL_SCANCODE_LEFT:
                 if (app->menu_selection == 0) {
-                    app->scene.global_brightness = clamp(app->scene.global_brightness - 0.05f, 0.0f, 1.0f);
+                    app->scene.settings.global_brightness = clamp(app->scene.settings.global_brightness - 0.05f, 0.0f, 1.0f);
                 }
-                else {
-                    app->scene.particle_intensity = clamp(app->scene.particle_intensity - 0.05f, 0.0f, 1.0f);
+                else if (app->menu_selection == 1) {
+                    app->scene.settings.particle_intensity = clamp(app->scene.settings.particle_intensity - 0.05f, 0.0f, 1.0f);
+                }
+                else if (app->menu_selection == 2) {
+                    app->scene.settings.sound_volume = clamp(app->scene.settings.sound_volume - 0.05f, 0.0f, 1.0f);
+                    set_audio_volume(app->scene.settings.sound_volume);
                 }
                 break;
 
             case SDL_SCANCODE_D:
             case SDL_SCANCODE_RIGHT:
                 if (app->menu_selection == 0) {
-                    app->scene.global_brightness = clamp(app->scene.global_brightness + 0.05f, 0.0f, 1.0f);
+                    app->scene.settings.global_brightness = clamp(app->scene.settings.global_brightness + 0.05f, 0.0f, 1.0f);
                 }
-                else {
-                    app->scene.particle_intensity = clamp(app->scene.particle_intensity + 0.05f, 0.0f, 1.0f);
+                else if (app->menu_selection == 1) {
+                    app->scene.settings.particle_intensity = clamp(app->scene.settings.particle_intensity + 0.05f, 0.0f, 1.0f);
+                }
+                else if (app->menu_selection == 2) {
+                    app->scene.settings.sound_volume = clamp(app->scene.settings.sound_volume + 0.05f, 0.0f, 1.0f);
+                    set_audio_volume(app->scene.settings.sound_volume);
                 }
                 break;
 
@@ -151,7 +164,9 @@ void handle_simulation_events(App* app, SDL_Event* event) {
                 case SDL_SCANCODE_ESCAPE:
                     app->current_state = STATE_PAUSED;
                     app->menu_selection = 0;
+
                     SDL_SetRelativeMouseMode(SDL_FALSE);
+                    Mix_Pause(-1);
                     break;
                 case SDL_SCANCODE_F1:
                     app->is_help_shown = !app->is_help_shown;
@@ -177,7 +192,7 @@ void handle_simulation_events(App* app, SDL_Event* event) {
                     break;
 
                 default:
-                    try_launch_firework(app->scene.fireworks, event->key.keysym.scancode);
+                    try_launch_firework(app->scene.fireworks, event->key.keysym.scancode, app->camera.position);
                     break;
             }
             break;
@@ -326,8 +341,16 @@ void handle_settings_mouse_event(App* app, int x, int y) {
             float new_value = (float)(x - bar_x_start) / bar_width;
             new_value = clamp(new_value, 0.0f, 1.0f);
 
-            float* target_property = (i == 0) ? &app->scene.global_brightness : &app->scene.particle_intensity;
-            *target_property = new_value;
+            if (i == 0) {
+                app->scene.settings.global_brightness = new_value;
+            }
+            else if (i == 1) {
+                app->scene.settings.particle_intensity = new_value;
+            }
+            else if (i == 2) {
+                app->scene.settings.sound_volume = new_value;
+                set_audio_volume(app->scene.settings.sound_volume);
+            }
 
             app->menu_selection = i;
         }
@@ -357,7 +380,7 @@ void handle_confirm_mouse_event(App* app, int mouse_x, int mouse_y) {
     }
 }
 
-void try_launch_firework(Firework* fireworks, SDL_Scancode scancode) {
+void try_launch_firework(Firework* fireworks, SDL_Scancode scancode, vec3 camera_position) {
     struct { SDL_Scancode code; FireworkPattern pattern; } patterns[] = {
         { SDL_SCANCODE_SPACE, PATTERN_PEONY },
         { SDL_SCANCODE_U,     PATTERN_COMET },
@@ -376,7 +399,7 @@ void try_launch_firework(Firework* fireworks, SDL_Scancode scancode) {
     int count = sizeof(patterns) / sizeof(patterns[0]);
     for (int i = 0; i < count; i++) {
         if (patterns[i].code == scancode) {
-            launch_firework(fireworks, patterns[i].pattern);
+            launch_firework(fireworks, patterns[i].pattern, camera_position);
             break;
         }
     }

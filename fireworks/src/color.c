@@ -4,14 +4,17 @@
 #include <stdlib.h>
 
 static const Color color_palette[COLOR_COUNT] = {
-    [COLOR_RED] = {1.0f, 0.15f, 0.15f, 1.0f},
-    [COLOR_ORANGE] = {1.0f, 0.5f, 0.0f, 1.0f},
-    [COLOR_YELLOW] = {1.0f, 0.8f, 0.1f, 1.0f},
-    [COLOR_GREEN] = {0.15f, 1.0f, 0.2f, 1.0f},
-    [COLOR_CYAN] = {0.1f, 1.0f, 1.0f, 1.0f},
     [COLOR_BLUE] = {0.2f, 0.4f, 1.0f, 1.0f},
+    [COLOR_BROWN] = {0.4f, 0.2f, 0.05f, 1.0f},
+    [COLOR_CYAN] = {0.1f, 1.0f, 1.0f, 1.0f},
+    [COLOR_GREEN] = {0.15f, 1.0f, 0.2f, 1.0f},
+    [COLOR_ORANGE] = {1.0f, 0.5f, 0.0f, 1.0f},
+    [COLOR_PINK] = {1.0f, 0.4f, 0.7f, 1.0f},
+    [COLOR_RED] = {1.0f, 0.15f, 0.15f, 1.0f},
+    [COLOR_SILVER] = {0.75f, 0.78f, 0.85f, 1.0f},
     [COLOR_VIOLET] = {0.5f, 0.0f, 1.0f, 1.0f},
-    [COLOR_WHITE] = {1.0f, 1.0f, 1.0f, 1.0f}
+    [COLOR_WHITE] = {1.0f, 1.0f, 1.0f, 1.0f},
+    [COLOR_YELLOW] = {1.0f, 0.8f, 0.1f, 1.0f}
 };
 
 Color get_color(ColorName name) {

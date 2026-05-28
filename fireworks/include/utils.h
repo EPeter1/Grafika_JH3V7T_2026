@@ -8,6 +8,7 @@
  */
 double degree_to_radian(double degree);
 
+double radian_to_degree(double radian);
 float rand_range(float min, float max);
 float rand_symmetric(float deviation);
 float clamp(float value, float min, float max);

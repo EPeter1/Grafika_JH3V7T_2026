@@ -15,7 +15,7 @@
 
 static const PhysicsConfig pattern_configs[PATTERN_COUNT] = {
     [PATTERN_CHRYSANTHEMUM] = {.drag = 0.95f, .gravity = 0.15f, .spark_count = 300, .alpha_exponent = 2.0f},
-    [PATTERN_COMET] = {.drag = 0.05f, .gravity = 0.1f, .spark_count = 100, .alpha_exponent = 0.5f},
+    [PATTERN_COMET] = {.drag = 0.05f, .gravity = 0.1f, .spark_count = 8, .alpha_exponent = 0.5f},
     [PATTERN_CROSSETTE] = {.drag = 0.8f, .gravity = 0.1f, .spark_count = 20, .alpha_exponent = 0.5f},
     [PATTERN_FISH] = {.drag = 2.0f, .gravity = 0.05f, .spark_count = 20, .alpha_exponent = 2.0f},
     [PATTERN_GHOST] = {.drag = 1.0f, .gravity = 0.05f, .spark_count = 300, .alpha_exponent = 2.0f},
@@ -130,7 +130,7 @@ void apply_pattern_behavior(Firework* firework, Spark* spark, const PhysicsConfi
 
 void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* color, float* size) {
     *color = spark->color;
-    *size = 3.0f;
+    *size = 5.0f;
 
     float progress = get_spark_progress(spark);
     const PhysicsConfig config = get_physics_config(firework->pattern);
@@ -144,23 +144,24 @@ void apply_spark_visuals(const Firework* firework, const Spark* spark, Color* co
     }
 
     switch (firework->pattern) {
+        case PATTERN_COMET:
+            *size = 25.0f;
+            break;
+
         case PATTERN_GHOST:
             handle_ghost_logic(firework, spark, color, size);
+            break;
+
+        case PATTERN_NISHIKI_KAMURO:
+            *size = 2.0f;
             break;
 
         case PATTERN_PALM:
             *size = 15.0f;
             break;
 
-        case PATTERN_COMET:
-            *size = spark->is_leader ? 15.0f : 0.0f;
-            break;
-
-        case PATTERN_NISHIKI_KAMURO:
-            *size = 2.0f;
-            if (progress > 0.8f) {
-                *color = mix_color(spark->color, get_color(COLOR_RED), 0.5f);
-            }
+        case PATTERN_STROBE:
+            handle_strobe_logic(firework, spark, color, size);
             break;
 
         default:
@@ -217,6 +218,27 @@ void handle_ghost_logic(const Firework* firework, const Spark* spark, Color* col
     }
 }
 
+void handle_strobe_logic(const Firework* firework, const Spark* spark, Color* color, float* size) {
+    int index = get_spark_index(firework, spark);
+    float age = spark->max_life - spark->current_life;
+
+    float frequency = 5.0f + (float)(index % 5);
+    float phase_shift = (float)index * 0.8f;
+    float wave = sinf(age * frequency * 2.0f * M_PI + phase_shift);
+
+    if (wave < 0.0f) {
+        color->alpha = 0.0f;
+        return;
+    }
+
+    if (index % 10 < 6) {
+        float min_size = 2.0f;
+        float max_size = 15.0f;
+
+        *size = min_size + (wave * (max_size - min_size));
+    }
+}
+
 void update_spark_trail(Spark* spark, Trail* trails, float delta_time) {
     Trail* trail = &trails[spark->trail_index];
     float sample_rate = 0.0166f;
@@ -232,17 +254,6 @@ void update_spark_trail(Spark* spark, Trail* trails, float delta_time) {
 
 bool should_spark_render(const Firework* firework, const Spark* spark) {
     int index = get_spark_index(firework, spark);
-
-    if (firework->pattern == PATTERN_STROBE) {
-        float age = spark->max_life - spark->current_life;
-
-        float frequency = 5.0f + (float)(index % 5);
-        float phase_shift = (float)index * 0.8f;
-
-        if (sinf(age * frequency * 2.0f * M_PI + phase_shift) < 0) {
-            return false;
-        }
-    }
 
     if (firework->pattern == PATTERN_CHRYSANTHEMUM && index == 0) {
         return false;

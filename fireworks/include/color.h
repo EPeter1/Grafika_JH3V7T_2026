@@ -2,14 +2,17 @@
 #define COLOR_H
 
 typedef enum ColorName {
-    COLOR_RED,
-    COLOR_ORANGE,
-    COLOR_YELLOW,
-    COLOR_GREEN,
-    COLOR_CYAN,
     COLOR_BLUE,
+    COLOR_BROWN,
+    COLOR_CYAN,
+    COLOR_GREEN,
+    COLOR_ORANGE,
+    COLOR_PINK,
+    COLOR_RED,
+    COLOR_SILVER,
     COLOR_VIOLET,
     COLOR_WHITE,
+    COLOR_YELLOW,
     COLOR_COUNT
 } ColorName;
 

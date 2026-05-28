@@ -1,9 +1,11 @@
 #include "scene.h"
 
+#include "audio.h"
 #include "camera.h"
 #include "firework_renderer.h"
 #include "fireworks.h"
 #include "gl_state.h"
+#include "vec3.h"
 #include "water.h"
 
 #include <GL/glew.h>
@@ -22,8 +24,10 @@ static void init_settings_ubo(GLuint* settings_ubo) {
 }
 
 void init_scene(Scene* scene) {
-    scene->global_brightness = 1.0f;
-    scene->particle_intensity = 1.0f;
+    scene->settings.global_brightness = 1.0f;
+    scene->settings.particle_intensity = 1.0f;
+    scene->settings.sound_volume = 1.0f;
+    set_audio_volume(scene->settings.sound_volume);
 
     init_fireworks(scene->fireworks);
     init_firework_renderer(&scene->fire_renderer);
@@ -34,15 +38,15 @@ void init_scene(Scene* scene) {
 
 void update_scene_settings(Scene* scene) {
     glBindBuffer(GL_UNIFORM_BUFFER, scene->settings_ubo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float), &scene->global_brightness);
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float), sizeof(float), &scene->particle_intensity);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float), &scene->settings.global_brightness);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float), sizeof(float), &scene->settings.particle_intensity);
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void update_scene(Scene* scene, float delta_time) {
-    update_rising_fireworks(scene->fireworks, delta_time);
-    update_exploded_fireworks(scene->fireworks, delta_time);
+void update_scene(Scene* scene, vec3 camera_position, float delta_time) {
+    update_rising_fireworks(scene->fireworks, camera_position, delta_time);
+    update_exploded_fireworks(scene->fireworks, camera_position, delta_time);
 
     update_firework_buffers(&scene->fire_renderer, scene->fireworks);
     update_water_buffers(&scene->water_renderer, scene->fireworks);

@@ -1,5 +1,6 @@
 #include "app.h"
 
+#include "audio.h"
 #include "camera.h"
 #include "event.h"
 #include "gl_state.h"
@@ -103,6 +104,7 @@ void init_app(App* app, int width, int height) {
 
     init_camera(&app->camera);
     init_scene(&app->scene);
+    init_audio_mixer();
 
     app->background_texture = load_texture("assets/textures/menu_background.jpg", GL_CLAMP_TO_EDGE, false);
     app->current_state = STATE_MAIN_MENU;
@@ -187,7 +189,7 @@ void update_app(App* app) {
         }
 
         update_camera(&app->camera, delta_time);
-        update_scene(&app->scene, delta_time);
+        update_scene(&app->scene, app->camera.position, delta_time);
     }
 
     update_scene_settings(&app->scene);
@@ -218,7 +220,7 @@ void render_app(App* app) {
 
         case STATE_SETTINGS:
             render_dim_overlay();
-            render_settings(app->menu_selection, app->scene.global_brightness, app->scene.particle_intensity);
+            render_settings(app->menu_selection, (float*)&app->scene.settings);
             break;
 
         case STATE_SIMULATION:
@@ -240,6 +242,7 @@ void render_app(App* app) {
 void destroy_app(App* app) {
     destroy_scene(&app->scene);
     destroy_user_interface();
+    destroy_audio_mixer();
 
     if (app->gl_context != NULL) {
         SDL_GL_DeleteContext(app->gl_context);

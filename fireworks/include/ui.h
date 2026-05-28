@@ -9,7 +9,7 @@
 
 #include <stdbool.h>
 
-#define SETTINGS_MENU_COUNT 2
+#define SETTINGS_MENU_COUNT 3
 #define CONFIRM_MENU_COUNT 3
 
 typedef enum MainMenuItem {
@@ -44,7 +44,7 @@ void init_ui_rendering(int width, int height);
 void draw_rectangle(GLuint texture_id, int x, int y, int width, int height, Color color);
 void render_background(GLuint texture_id);
 void render_menu(Label* labels, int item_count, int selection, bool is_confirmed, int start_y);
-void render_settings(int selection, float brightness, float intensity);
+void render_settings(int selection, const float* settings);
 void render_confirm_dialog(int screen_width, int screen_height);
 void render_help_overlay(App* app);
 void render_dim_overlay();
